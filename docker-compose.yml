@@ -44,9 +44,48 @@ services:
       - postgres-auth
 
 
+  postgres-product:
+    image: postgres:16
+    container_name: ${POSTGRES_PRODUCT_CONTAINER_NAME}
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${POSTGRES_PRODUCT_DB}
+      POSTGRES_USER: ${POSTGRES_PRODUCT_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PRODUCT_PASSWORD}
+    volumes:
+      - postgres-product-data:/var/lib/postgresql/data
+    ports:
+      - "5434:5432"
+    networks:
+      - eshop-network
+
+  product-service:
+    build:
+      context: ./product-service
+      dockerfile: Dockerfile
+    container_name: product-service
+    environment:
+      EUREKA_SERVER_URL: ${EUREKA_SERVER_URL}
+      SPRING_DATASOURCE_URL: jdbc:postgresql://${POSTGRES_PRODUCT_CONTAINER_NAME}:5432/${POSTGRES_PRODUCT_DB}
+      SPRING_DATASOURCE_USERNAME: ${POSTGRES_PRODUCT_USER}
+      SPRING_DATASOURCE_PASSWORD: ${POSTGRES_PRODUCT_PASSWORD}
+      SPRING_JPA_HIBERNATE_DDL_AUTO: update
+      APPLICATION_SECURITY_JWT_SECRET_KEY: ${JWT_SECRET_KEY}
+    volumes:
+      - product-images:/app/uploads
+    ports:
+      - "8081:8080"
+    networks:
+      - eshop-network
+    depends_on:
+      - postgres-product
+      - eureka-server
+
+
 volumes:
   postgres-auth-data: {}
-
+  postgres-product-data: {}
+  product-images: {}
 
 networks:
   eshop-network:
