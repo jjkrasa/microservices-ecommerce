@@ -1,4 +1,13 @@
 services:
+  eureka-server:
+    build:
+      context: ./eureka-server
+      dockerfile: Dockerfile
+    ports:
+      - "8761:8761"
+    networks:
+      - eshop-network
+
   postgres-auth:
     image: postgres:16
     container_name: ${POSTGRES_AUTH_CONTAINER_NAME}
@@ -20,6 +29,7 @@ services:
       dockerfile: Dockerfile
     container_name: auth-service
     environment:
+      EUREKA_SERVER_URL: ${EUREKA_SERVER_URL}
       SPRING_DATASOURCE_URL: jdbc:postgresql://${POSTGRES_AUTH_CONTAINER_NAME}:5432/${POSTGRES_AUTH_DB}
       SPRING_DATASOURCE_USERNAME: ${POSTGRES_AUTH_USER}
       SPRING_DATASOURCE_PASSWORD: ${POSTGRES_AUTH_PASSWORD}
