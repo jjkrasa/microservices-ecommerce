@@ -101,9 +101,53 @@ services:
         condition: service_healthy
 
 
+  postgres-cart:
+    image: postgres:16
+    container_name: ${POSTGRES_CART_CONTAINER_NAME}
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${POSTGRES_CART_DB}
+      POSTGRES_USER: ${POSTGRES_CART_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_CART_PASSWORD}
+    volumes:
+      - postgres-cart-data:/var/lib/postgresql/data
+    ports:
+      - "${POSTGRES_CART_PORT:-5435}:5432"
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U ${POSTGRES_CART_USER} -d ${POSTGRES_CART_DB}" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      eshop-network:
+        aliases:
+          - ${POSTGRES_CART_HOST}
+
+  cart-service:
+    build:
+      context: ./cart-service
+      dockerfile: Dockerfile
+    container_name: cart-service
+    environment:
+      EUREKA_SERVER_URL: http://${EUREKA_SERVER_HOST}:${EUREKA_SERVER_PORT}/eureka
+      SPRING_DATASOURCE_URL: jdbc:postgresql://${POSTGRES_CART_HOST}:5432/${POSTGRES_CART_DB}
+      SPRING_DATASOURCE_USERNAME: ${POSTGRES_CART_USER}
+      SPRING_DATASOURCE_PASSWORD: ${POSTGRES_CART_PASSWORD}
+      SPRING_JPA_HIBERNATE_DDL_AUTO: update
+      APPLICATION_SECURITY_JWT_SECRET_KEY: ${JWT_SECRET_KEY}
+    ports:
+      - "${CART_SERVICE_PORT:-8082}:8080"
+    networks:
+      - eshop-network
+    depends_on:
+      postgres-cart:
+        condition: service_healthy
+
+
 volumes:
   postgres-auth-data: {}
   postgres-product-data: {}
+  postgres-cart-data: {}
   product-images: {}
 
 networks:
