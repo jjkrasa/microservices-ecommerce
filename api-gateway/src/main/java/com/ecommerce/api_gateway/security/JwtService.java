@@ -1,4 +1,4 @@
-package com.ecommerce.productservice.product_service.security;
+package com.ecommerce.api_gateway.security;
 
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;

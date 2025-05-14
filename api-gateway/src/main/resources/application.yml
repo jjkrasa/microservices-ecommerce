@@ -1,0 +1,75 @@
+server:
+  port: ${API_GATEWAY_PORT:8080}
+
+eureka:
+  client:
+    service-url:
+      defaultZone: ${EUREKA_SERVER_URL}
+
+spring:
+  application:
+    name: ${API_GATEWAY_HOST}
+  cloud:
+    gateway:
+      routes:
+        - id: auth
+          uri: lb://AUTH-SERVICE
+          predicates:
+            - Path=/api/auth/**
+
+        - id: public-product
+          uri: lb://PRODUCT-SERVICE
+          predicates:
+            - Path=/api/products, /api/products/batch, /api/products/{productId}
+            - Method=GET
+
+        - id: admin-product
+          uri: lb://PRODUCT-SERVICE
+          predicates:
+              - Path=/api/products/admin, /api/products/admin/**
+          filters:
+            - name: JwtAuthentication
+              args:
+                roles:
+                  - ROLE_ADMIN
+
+        - id: images
+          uri: lb://PRODUCT-SERVICE
+          predicates:
+            - Path=/images
+
+        - id: public-category
+          uri: lb://PRODUCT-SERVICE
+          predicates:
+            - Path=/api/categories
+
+        - id: admin-category
+          uri: lb://PRODUCT-SERVICE
+          predicates:
+            - Path=/api/categories/admin/**
+          filters:
+            - name: JwtAuthentication
+              args:
+                roles:
+                  - ROLE_ADMIN
+
+        - id: cart
+          uri: lb://cart-service
+          predicates:
+            - Path=/api/carts, /api/carts/**
+          filters:
+            - name: JwtAuthentication
+              args:
+                roles:
+                  - ROLE_USER
+                  - ROLE_ADMIN
+
+logging:
+  level:
+    org.springframework.cloud.gateway: DEBUG
+    com.netflix.discovery: DEBUG
+
+application:
+  security:
+    jwt:
+      secret-key: ${JWT_SECRET_KEY}
