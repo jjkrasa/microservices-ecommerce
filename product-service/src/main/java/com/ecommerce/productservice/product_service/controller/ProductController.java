@@ -10,7 +10,6 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -43,38 +42,33 @@ public class ProductController {
         return ResponseEntity.ok(productService.getProductsByIds(productIds));
     }
 
-    @PostMapping("/admin/products")
-    @PreAuthorize("hasRole('ADMIN')")
+    @PostMapping("/admin")
     public ResponseEntity<ProductResponse> createProduct(@Valid @RequestBody CreateProductRequest request) {
         ProductResponse product = productService.createProduct(request);
 
         return new ResponseEntity<>(product, HttpStatus.CREATED);
     }
 
-    @PutMapping("/admin/products/{productId}")
-    @PreAuthorize("hasRole('ADMIN')")
+    @PutMapping("/admin/{productId}")
     public ResponseEntity<Void> updateProduct(@PathVariable Long productId, @Valid @RequestBody UpdateProductRequest request) {
         productService.updateProduct(productId, request);
 
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 
-    @DeleteMapping("/admin/products/{productId}")
-    @PreAuthorize("hasRole('ADMIN')")
+    @DeleteMapping("/admin/{productId}")
     public ResponseEntity<Void> deleteProductById(@PathVariable Long productId) {
         productService.deleteProductById(productId);
 
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 
-    @PostMapping("/admin/products/image")
-    @PreAuthorize("hasRole('ADMIN')")
+    @PostMapping("/admin/image")
     public ResponseEntity<String> uploadImage(@RequestParam("file")MultipartFile file) {
         return ResponseEntity.ok(imageService.saveImage(file));
     }
 
-    @PatchMapping("/admin/products/{productId}/image")
-    @PreAuthorize("hasRole('ADMIN')")
+    @PatchMapping("/admin/{productId}/image")
     public ResponseEntity<String> updateProductImage(
             @PathVariable Long productId,
             @RequestParam("file") MultipartFile file
