@@ -63,12 +63,12 @@ public class ProductController {
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 
-    @PostMapping("/admin/image")
-    public ResponseEntity<String> uploadImage(@RequestParam("file")MultipartFile file) {
+    @PostMapping("/admin/images")
+    public ResponseEntity<String> uploadImage(@RequestParam("file") MultipartFile file) {
         return ResponseEntity.ok(imageService.saveImage(file));
     }
 
-    @PatchMapping("/admin/{productId}/image")
+    @PatchMapping("/admin/{productId}/images")
     public ResponseEntity<String> updateProductImage(
             @PathVariable Long productId,
             @RequestParam("file") MultipartFile file
