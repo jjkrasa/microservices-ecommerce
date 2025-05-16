@@ -13,18 +13,18 @@ spring:
     gateway:
       routes:
         - id: auth
-          uri: lb://AUTH-SERVICE
+          uri: lb://${AUTH_APP_NAME}
           predicates:
             - Path=/api/auth/**
 
         - id: public-product
-          uri: lb://PRODUCT-SERVICE
+          uri: lb://${PRODUCT_APP_NAME}
           predicates:
             - Path=/api/products, /api/products/batch, /api/products/{productId}
             - Method=GET
 
         - id: admin-product
-          uri: lb://PRODUCT-SERVICE
+          uri: lb://${PRODUCT_APP_NAME}
           predicates:
               - Path=/api/products/admin, /api/products/admin/**
           filters:
@@ -34,7 +34,7 @@ spring:
                   - ROLE_ADMIN
 
         - id: admin-images
-          uri: lb://PRODUCT-SERVICE
+          uri: lb://${PRODUCT_APP_NAME}
           predicates:
             - Path=/api/products/images
             - Method=POST
@@ -45,18 +45,18 @@ spring:
                   - ROLE_ADMIN
 
         - id: product-images
-          uri: lb://PRODUCT-SERVICE
+          uri: lb://${PRODUCT_APP_NAME}
           predicates:
             - Path=/images/**
             - Method=GET
 
         - id: public-category
-          uri: lb://PRODUCT-SERVICE
+          uri: lb://${PRODUCT_APP_NAME}
           predicates:
             - Path=/api/categories
 
         - id: admin-category
-          uri: lb://PRODUCT-SERVICE
+          uri: lb://${PRODUCT_APP_NAME}
           predicates:
             - Path=/api/categories/admin/**
           filters:
@@ -66,7 +66,7 @@ spring:
                   - ROLE_ADMIN
 
         - id: cart
-          uri: lb://cart-service
+          uri: lb://${CART_APP_NAME}
           predicates:
             - Path=/api/carts, /api/carts/**
           filters:

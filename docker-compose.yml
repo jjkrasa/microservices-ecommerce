@@ -50,6 +50,7 @@ services:
       SPRING_JPA_HIBERNATE_DDL_AUTO: update
       APPLICATION_SECURITY_JWT_SECRET_KEY: ${JWT_SECRET_KEY}
       APPLICATION_SECURITY_JWT_EXPIRATION: ${JWT_EXPIRATION}
+      AUTH_APP_NAME: ${AUTH_APP_NAME}
     networks:
       - eshop-network
     depends_on:
@@ -90,6 +91,7 @@ services:
       SPRING_DATASOURCE_USERNAME: ${POSTGRES_PRODUCT_USER}
       SPRING_DATASOURCE_PASSWORD: ${POSTGRES_PRODUCT_PASSWORD}
       SPRING_JPA_HIBERNATE_DDL_AUTO: update
+      PRODUCT_APP_NAME: ${PRODUCT_APP_NAME}
     volumes:
       - product-images:/app/uploads
     networks:
@@ -132,6 +134,7 @@ services:
       SPRING_DATASOURCE_USERNAME: ${POSTGRES_CART_USER}
       SPRING_DATASOURCE_PASSWORD: ${POSTGRES_CART_PASSWORD}
       SPRING_JPA_HIBERNATE_DDL_AUTO: update
+      CART_APP_NAME: ${CART_APP_NAME}
     networks:
       - eshop-network
     depends_on:
@@ -146,6 +149,9 @@ services:
     environment:
       EUREKA_SERVER_URL: "http://${EUREKA_SERVER_HOST}:${EUREKA_SERVER_PORT}/eureka"
       API_GATEWAY_HOST: ${API_GATEWAY_HOST}
+      AUTH_APP_NAME: ${AUTH_APP_NAME}
+      PRODUCT_APP_NAME: ${PRODUCT_APP_NAME}
+      CART_APP_NAME: ${CART_APP_NAME}
       JWT_SECRET_KEY: ${JWT_SECRET_KEY}
     ports:
       - "${API_GATEWAY_PORT:-8080}:8080"
