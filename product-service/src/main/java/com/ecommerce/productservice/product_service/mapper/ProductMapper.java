@@ -20,14 +20,14 @@ public interface ProductMapper {
     @Mapping(target = "category", source = "category.name")
     @Mapping(target = "description", source = "description")
     @Mapping(target = "price", source = "price")
-    @Mapping(target = "quantity", source = "quantity")
+    @Mapping(target = "availableQuantity", source = "availableQuantity")
     @Mapping(target = "imageUrl", source = "imageUrl")
     ProductResponse productToProductResponse(Product product);
 
     @Mapping(target = "name", source = "name")
     @Mapping(target = "description", source = "description")
     @Mapping(target = "price", source = "price")
-    @Mapping(target = "quantity", source = "quantity")
+    @Mapping(target = "availableQuantity", source = "availableQuantity")
     @Mapping(target = "imageUrl", source = "imageUrl")
     Product createProductRequestToProduct(CreateProductRequest request);
 

@@ -25,9 +25,9 @@ public class CreateProductRequest {
     @DecimalMin(value = "0.0", inclusive = false, message = "Price must be greater than 0.0")
     private BigDecimal price;
 
-    @NotNull(message = "Quantity is required")
-    @Min(value = 0, message = "Quantity must be positive")
-    private Integer quantity;
+    @NotNull(message = "Available quantity is required")
+    @Min(value = 0, message = "Available quantity must be positive")
+    private Integer availableQuantity;
 
     private String imageUrl;
 }

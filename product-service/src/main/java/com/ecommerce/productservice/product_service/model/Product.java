@@ -33,7 +33,7 @@ public class Product {
     private BigDecimal price;
 
     @Column(nullable = false)
-    private Integer quantity;
+    private Integer availableQuantity;
 
     private String imageUrl;
 }
