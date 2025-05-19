@@ -76,6 +76,18 @@ spring:
                   - ROLE_USER
                   - ROLE_ADMIN
 
+
+        - id: order
+          uri: lb://${ORDER_APP_NAME}
+          predicates:
+            - Path=/api/orders, /api/orders/**
+          filters:
+            - name: JwtAuthentication
+              args:
+                roles:
+                  - ROLE_USER
+                  - ROLE_ADMIN
+
 logging:
   level:
     org.springframework.cloud.gateway: DEBUG
