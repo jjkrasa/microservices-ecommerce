@@ -18,44 +18,44 @@ public class CartController {
     private final CartService cartService;
 
     @GetMapping
-    public ResponseEntity<CartResponse> getCart(@RequestHeader("X-User-Id") String userId) {
-        return ResponseEntity.ok(cartService.getCart(Long.parseLong(userId)));
+    public ResponseEntity<CartResponse> getCart(@RequestHeader("X-User-Id") Long userId) {
+        return ResponseEntity.ok(cartService.getCart(userId));
     }
 
     @PostMapping
     public ResponseEntity<Void> addItemToCart(
-            @RequestHeader("X-User-Id") String userId,
+            @RequestHeader("X-User-Id") Long userId,
             @RequestBody @Valid AddCartItemRequest request
     ) {
-        cartService.addItemToCart(Long.parseLong(userId), request);
+        cartService.addItemToCart(userId, request);
 
         return new ResponseEntity<>(HttpStatus.CREATED);
     }
 
     @DeleteMapping
-    public ResponseEntity<Void> clearCart(@RequestHeader("X-User-Id") String userId) {
-        cartService.clearCart(Long.parseLong(userId));
+    public ResponseEntity<Void> clearCart(@RequestHeader("X-User-Id") Long userId) {
+        cartService.clearCart(userId);
 
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 
     @PatchMapping("/items/{cartItemId}")
     public ResponseEntity<Void> updateCartItemQuantity(
-            @RequestHeader("X-User-Id") String userId,
+            @RequestHeader("X-User-Id") Long userId,
             @PathVariable Long cartItemId,
             @RequestBody @Valid UpdateCartItemRequest request
     ) {
-        cartService.updateCartItemQuantity(Long.parseLong(userId), cartItemId, request);
+        cartService.updateCartItemQuantity(userId, cartItemId, request);
 
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 
     @DeleteMapping("/items/{cartItemId}")
     public ResponseEntity<Void> deleteCartItem(
-            @RequestHeader("X-User-Id") String userId,
+            @RequestHeader("X-User-Id") Long userId,
             @PathVariable Long cartItemId
     ) {
-        cartService.deleteCartItem(Long.parseLong(userId), cartItemId);
+        cartService.deleteCartItem(userId, cartItemId);
 
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
