@@ -2,6 +2,7 @@ package com.ecommerce.exceptionlib;
 
 import com.ecommerce.exceptionlib.exception.BadRequestException;
 import com.ecommerce.exceptionlib.exception.ConflictException;
+import com.ecommerce.exceptionlib.exception.InternalServerException;
 import com.ecommerce.exceptionlib.exception.NotFoundException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -39,14 +40,19 @@ public class GlobalExceptionHandler {
         return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
     }
 
-    @ExceptionHandler({ BadRequestException.class, NotFoundException.class, ConflictException.class })
+    @ExceptionHandler({
+            BadRequestException.class,
+            NotFoundException.class,
+            ConflictException.class,
+            InternalServerException.class
+    })
     public ResponseEntity<ErrorResponse> handleException(RuntimeException ex) {
         HttpStatus status = switch (ex) {
             case BadRequestException ignored -> HttpStatus.BAD_REQUEST;
             case NotFoundException ignored -> HttpStatus.NOT_FOUND;
             case ConflictException ignored -> HttpStatus.CONFLICT;
-
-            default -> HttpStatus.INTERNAL_SERVER_ERROR;
+            case InternalServerException ignored -> HttpStatus.INTERNAL_SERVER_ERROR;
+            case RuntimeException ignored -> HttpStatus.INTERNAL_SERVER_ERROR;
         };
 
         ErrorResponse errorResponse = new ErrorResponse(
