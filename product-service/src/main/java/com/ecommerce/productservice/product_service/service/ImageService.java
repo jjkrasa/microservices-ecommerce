@@ -1,8 +1,8 @@
 package com.ecommerce.productservice.product_service.service;
 
-import com.ecommerce.productservice.product_service.exception.BadRequestException;
-import com.ecommerce.productservice.product_service.exception.ErrorCode;
-import com.ecommerce.productservice.product_service.exception.InternalServerError;
+import com.ecommerce.exceptionlib.ErrorCode;
+import com.ecommerce.exceptionlib.exception.BadRequestException;
+import com.ecommerce.exceptionlib.exception.InternalServerException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -39,8 +39,7 @@ public class ImageService {
 
             return "/images/" + fileName;
         } catch (IOException e) {
-            System.out.println("Saving image failed: " + e.getMessage());
-            throw new InternalServerError(ErrorCode.IMAGE_UPLOAD_FAILED.getMessage());
+            throw new InternalServerException(ErrorCode.IMAGE_UPLOAD_FAILED.getMessage());
         }
     }
 
@@ -60,7 +59,7 @@ public class ImageService {
 
             Files.deleteIfExists(filePath);
         } catch (IOException e) {
-            System.out.println("Deleting image failed: " + e.getMessage());
+            throw new InternalServerException(ErrorCode.DELETE_IMAGE_FAILED.getMessage());
         }
     }
 }

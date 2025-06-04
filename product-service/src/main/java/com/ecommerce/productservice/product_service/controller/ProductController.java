@@ -25,7 +25,7 @@ public class ProductController {
     private final ImageService imageService;
 
     @GetMapping("/{productId}")
-    public ResponseEntity<ProductResponse> getProductById(@PathVariable Long productId) {
+    public ResponseEntity<ProductResponse> getProductById(@PathVariable("productId") Long productId) {
         return ResponseEntity.ok(productService.getProductById(productId));
     }
 
@@ -50,14 +50,14 @@ public class ProductController {
     }
 
     @PutMapping("/admin/{productId}")
-    public ResponseEntity<Void> updateProduct(@PathVariable Long productId, @Valid @RequestBody UpdateProductRequest request) {
+    public ResponseEntity<Void> updateProduct(@PathVariable("productId") Long productId, @Valid @RequestBody UpdateProductRequest request) {
         productService.updateProduct(productId, request);
 
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 
     @DeleteMapping("/admin/{productId}")
-    public ResponseEntity<Void> deleteProductById(@PathVariable Long productId) {
+    public ResponseEntity<Void> deleteProductById(@PathVariable("productId") Long productId) {
         productService.deleteProductById(productId);
 
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
@@ -70,7 +70,7 @@ public class ProductController {
 
     @PatchMapping("/admin/{productId}/images")
     public ResponseEntity<String> updateProductImage(
-            @PathVariable Long productId,
+            @PathVariable("productId") Long productId,
             @RequestParam("file") MultipartFile file
     ) {
         return ResponseEntity.ok(productService.updateProductImage(productId, file));

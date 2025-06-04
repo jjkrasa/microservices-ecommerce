@@ -1,11 +1,11 @@
 package com.ecommerce.productservice.product_service.service;
 
+import com.ecommerce.exceptionlib.ErrorCode;
+import com.ecommerce.exceptionlib.exception.NotFoundException;
 import com.ecommerce.productservice.product_service.dto.CreateProductRequest;
 import com.ecommerce.productservice.product_service.dto.PagedResponse;
 import com.ecommerce.productservice.product_service.dto.ProductResponse;
 import com.ecommerce.productservice.product_service.dto.UpdateProductRequest;
-import com.ecommerce.productservice.product_service.exception.ErrorCode;
-import com.ecommerce.productservice.product_service.exception.NotFoundException;
 import com.ecommerce.productservice.product_service.mapper.ProductMapper;
 import com.ecommerce.productservice.product_service.model.Category;
 import com.ecommerce.productservice.product_service.model.Product;
