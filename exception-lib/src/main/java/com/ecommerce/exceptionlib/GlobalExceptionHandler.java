@@ -1,5 +1,8 @@
-package com.ecommerce.authservice.auth_service.exception;
+package com.ecommerce.exceptionlib;
 
+import com.ecommerce.exceptionlib.exception.BadRequestException;
+import com.ecommerce.exceptionlib.exception.ConflictException;
+import com.ecommerce.exceptionlib.exception.NotFoundException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.FieldError;
@@ -36,46 +39,28 @@ public class GlobalExceptionHandler {
         return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
     }
 
-    @ExceptionHandler(ConflictException.class)
-    public ResponseEntity<ErrorResponse> handleConflict(ConflictException ex) {
+    @ExceptionHandler({ BadRequestException.class, NotFoundException.class, ConflictException.class })
+    public ResponseEntity<ErrorResponse> handleException(RuntimeException ex) {
+        HttpStatus status = switch (ex) {
+            case BadRequestException ignored -> HttpStatus.BAD_REQUEST;
+            case NotFoundException ignored -> HttpStatus.NOT_FOUND;
+            case ConflictException ignored -> HttpStatus.CONFLICT;
+
+            default -> HttpStatus.INTERNAL_SERVER_ERROR;
+        };
+
         ErrorResponse errorResponse = new ErrorResponse(
                 LocalDateTime.now(),
-                HttpStatus.CONFLICT.value(),
-                HttpStatus.CONFLICT.getReasonPhrase(),
+                status.value(),
+                status.getReasonPhrase(),
                 resolveErrorCode(ex.getMessage()),
                 Map.of("message", ex.getMessage())
         );
 
-        return new ResponseEntity<>(errorResponse, HttpStatus.CONFLICT);
+        return new ResponseEntity<>(errorResponse, status);
     }
 
-    @ExceptionHandler(BadRequestException.class)
-    public ResponseEntity<ErrorResponse> handleBadRequest(BadRequestException ex) {
-        ErrorResponse errorResponse = new ErrorResponse(
-                LocalDateTime.now(),
-                HttpStatus.BAD_REQUEST.value(),
-                HttpStatus.BAD_REQUEST.getReasonPhrase(),
-                resolveErrorCode(ex.getMessage()),
-                Map.of("message", ex.getMessage())
-        );
-
-        return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
-    }
-
-    @ExceptionHandler(UnauthorizedException.class)
-    public ResponseEntity<ErrorResponse> handleUnauthorized(UnauthorizedException ex) {
-        ErrorResponse errorResponse = new ErrorResponse(
-                LocalDateTime.now(),
-                HttpStatus.UNAUTHORIZED.value(),
-                HttpStatus.UNAUTHORIZED.getReasonPhrase(),
-                resolveErrorCode(ex.getMessage()),
-                Map.of("message", ex.getMessage())
-        );
-
-        return new ResponseEntity<>(errorResponse, HttpStatus.UNAUTHORIZED);
-    }
-
-    private String resolveErrorCode(String message) {
+    private String resolveErrorCode(final String message) {
         return ErrorCode.getErrorCodeFromMessage(message)
                 .map(Enum::name)
                 .orElse("UNKNOWN_ERROR");

@@ -1,4 +1,4 @@
-package com.ecommerce.authservice.auth_service.exception;
+package com.ecommerce.exceptionlib.exception;
 
 public class UnauthorizedException extends RuntimeException {
     public UnauthorizedException(String message) {

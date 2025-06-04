@@ -1,4 +1,4 @@
-package com.ecommerce.authservice.auth_service.exception;
+package com.ecommerce.exceptionlib;
 
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
@@ -17,7 +17,7 @@ public enum ErrorCode {
 
     private final String message;
 
-    public static Optional<ErrorCode> getErrorCodeFromMessage(String message) {
+    public static Optional<ErrorCode> getErrorCodeFromMessage(final String message) {
         return Arrays.stream(values())
                 .filter(errorCode -> errorCode.getMessage().equals(message))
                 .findFirst();

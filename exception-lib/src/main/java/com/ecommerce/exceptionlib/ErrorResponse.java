@@ -1,4 +1,4 @@
-package com.ecommerce.authservice.auth_service.exception;
+package com.ecommerce.exceptionlib;
 
 import java.time.LocalDateTime;
 import java.util.Map;
