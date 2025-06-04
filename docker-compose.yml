@@ -41,8 +41,8 @@ services:
 
   auth-service:
     build:
-      context: ./auth-service
-      dockerfile: Dockerfile
+      context: .
+      dockerfile: auth-service/Dockerfile
     container_name: auth-service
     environment:
       EUREKA_SERVER_URL: "http://${EUREKA_SERVER_HOST}:${EUREKA_SERVER_PORT}/eureka"

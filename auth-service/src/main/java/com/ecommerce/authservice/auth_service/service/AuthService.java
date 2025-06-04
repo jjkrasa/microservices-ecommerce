@@ -2,13 +2,13 @@ package com.ecommerce.authservice.auth_service.service;
 
 import com.ecommerce.authservice.auth_service.dto.LoginRequest;
 import com.ecommerce.authservice.auth_service.dto.RegisterRequest;
-import com.ecommerce.authservice.auth_service.exception.BadRequestException;
-import com.ecommerce.authservice.auth_service.exception.ConflictException;
-import com.ecommerce.authservice.auth_service.exception.ErrorCode;
-import com.ecommerce.authservice.auth_service.exception.UnauthorizedException;
 import com.ecommerce.authservice.auth_service.mapper.UserMapper;
 import com.ecommerce.authservice.auth_service.model.User;
 import com.ecommerce.authservice.auth_service.repository.UserRepository;
+import com.ecommerce.exceptionlib.ErrorCode;
+import com.ecommerce.exceptionlib.exception.BadRequestException;
+import com.ecommerce.exceptionlib.exception.ConflictException;
+import com.ecommerce.exceptionlib.exception.UnauthorizedException;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
