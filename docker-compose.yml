@@ -127,8 +127,8 @@ services:
 
   cart-service:
     build:
-      context: ./cart-service
-      dockerfile: Dockerfile
+      context: .
+      dockerfile: cart-service/Dockerfile
     container_name: cart-service
     environment:
       EUREKA_SERVER_URL: "http://${EUREKA_SERVER_HOST}:${EUREKA_SERVER_PORT}/eureka"

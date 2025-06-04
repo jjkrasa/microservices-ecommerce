@@ -42,7 +42,7 @@ public class CartController {
     @PatchMapping("/items/{cartItemId}")
     public ResponseEntity<Void> updateCartItemQuantity(
             @RequestHeader("X-User-Id") Long userId,
-            @PathVariable Long cartItemId,
+            @PathVariable("cartItemId") Long cartItemId,
             @RequestBody @Valid UpdateCartItemRequest request
     ) {
         cartService.updateCartItemQuantity(userId, cartItemId, request);
@@ -53,7 +53,7 @@ public class CartController {
     @DeleteMapping("/items/{cartItemId}")
     public ResponseEntity<Void> deleteCartItem(
             @RequestHeader("X-User-Id") Long userId,
-            @PathVariable Long cartItemId
+            @PathVariable("cartItemId") Long cartItemId
     ) {
         cartService.deleteCartItem(userId, cartItemId);
 

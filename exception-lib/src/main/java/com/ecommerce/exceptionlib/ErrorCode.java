@@ -21,7 +21,12 @@ public enum ErrorCode {
     IMAGE_UPLOAD_FAILED("Failed to store image"),
     DELETE_IMAGE_FAILED("Failed to delete image"),
     CATEGORY_IN_USE("Category is in use and cannot be deleted"),
-    INVALID_IMAGE_FORMAT("Image must be either in JPG or PNG format");
+    INVALID_IMAGE_FORMAT("Image must be either in JPG or PNG format"),
+
+    CART_DOES_NOT_EXIST("Cart does not exist"),
+    PRODUCT_WAS_NOT_FOUND_IN_CART("Product was not found in cart"),
+
+    ;
 
     private final String message;
 

@@ -1,9 +1,10 @@
 package com.ecommerce.cartservice.cart_service.config;
 
-import com.ecommerce.cartservice.cart_service.exception.BadRequestException;
-import com.ecommerce.cartservice.cart_service.exception.ErrorCode;
+import com.ecommerce.exceptionlib.ErrorCode;
+import com.ecommerce.exceptionlib.exception.NotFoundException;
 import feign.Response;
 import feign.codec.ErrorDecoder;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -13,14 +14,16 @@ public class FeignErrorDecoder implements ErrorDecoder {
 
     @Override
     public Exception decode(String s, Response response) {
+        HttpStatus status = HttpStatus.valueOf(response.status());
 
-        switch (response.status()) {
-            case 404:
+        switch (status) {
+            case NOT_FOUND:
                 if (s.contains("ProductClient#getProductById")) {
-                    return new BadRequestException(ErrorCode.PRODUCT_DOES_NOT_EXIST.getMessage());
+                    return new NotFoundException(ErrorCode.PRODUCT_NOT_FOUND.getMessage());
                 }
-        }
 
-        return defaultDecoder.decode(s, response);
+            default:
+                return defaultDecoder.decode(s, response);
+        }
     }
 }

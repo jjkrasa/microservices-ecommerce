@@ -7,7 +7,10 @@ import org.springframework.cloud.openfeign.EnableFeignClients;
 
 @EnableFeignClients
 @EnableDiscoveryClient
-@SpringBootApplication
+@SpringBootApplication(scanBasePackages = {
+		"com.ecommerce.cartservice",
+		"com.ecommerce.exceptionlib"
+})
 public class CartServiceApplication {
 
 	public static void main(String[] args) {

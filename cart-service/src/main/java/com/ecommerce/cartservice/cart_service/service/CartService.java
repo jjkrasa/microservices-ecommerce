@@ -2,11 +2,11 @@ package com.ecommerce.cartservice.cart_service.service;
 
 import com.ecommerce.cartservice.cart_service.client.ProductClient;
 import com.ecommerce.cartservice.cart_service.dto.*;
-import com.ecommerce.cartservice.cart_service.exception.ErrorCode;
-import com.ecommerce.cartservice.cart_service.exception.NotFoundException;
 import com.ecommerce.cartservice.cart_service.model.Cart;
 import com.ecommerce.cartservice.cart_service.model.CartItem;
 import com.ecommerce.cartservice.cart_service.repository.CartRepository;
+import com.ecommerce.exceptionlib.ErrorCode;
+import com.ecommerce.exceptionlib.exception.NotFoundException;
 import jakarta.transaction.Transactional;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
