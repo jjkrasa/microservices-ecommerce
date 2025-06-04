@@ -26,6 +26,11 @@ public enum ErrorCode {
     CART_DOES_NOT_EXIST("Cart does not exist"),
     PRODUCT_WAS_NOT_FOUND_IN_CART("Product was not found in cart"),
 
+    CART_IS_EMPTY("Cart is empty"),
+    INSUFFICIENT_STOCK("Insufficient stock for product"),
+    ORDER_CANNOT_BE_CANCELLED("Only orders with created status can be cancelled"),
+    ORDER_NOT_FOUND("Order was not found"),
+
     ;
 
     private final String message;
