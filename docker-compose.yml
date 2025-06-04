@@ -185,8 +185,8 @@ services:
 
   api-gateway:
     build:
-      context: ./api-gateway
-      dockerfile: Dockerfile
+      context: .
+      dockerfile: api-gateway/Dockerfile
     container_name: ${API_GATEWAY_CONTAINER_NAME}
     environment:
       EUREKA_SERVER_URL: "http://${EUREKA_SERVER_HOST}:${EUREKA_SERVER_PORT}/eureka"
