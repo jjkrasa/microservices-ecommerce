@@ -1,5 +1,6 @@
 package com.ecommerce.orderservice.order_service.mapper;
 
+import com.ecommerce.orderservice.order_service.dto.CreateOrderRequest;
 import com.ecommerce.orderservice.order_service.dto.OrderItemResponse;
 import com.ecommerce.orderservice.order_service.dto.OrderResponse;
 import com.ecommerce.orderservice.order_service.model.Order;
@@ -14,4 +15,7 @@ public interface OrderMapper {
     OrderResponse orderToOrderResponse(Order order);
 
     OrderItemResponse orderItemToOrderItemResponse(OrderItem orderItem);
+
+
+    Order createOrderRequestToOrder(CreateOrderRequest createOrderRequest);
 }

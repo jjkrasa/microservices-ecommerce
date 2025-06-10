@@ -5,7 +5,11 @@ import com.ecommerce.exceptionlib.exception.BadRequestException;
 import com.ecommerce.exceptionlib.exception.NotFoundException;
 import com.ecommerce.orderservice.order_service.client.CartClient;
 import com.ecommerce.orderservice.order_service.dto.CartResponse;
+import com.ecommerce.orderservice.order_service.dto.CreateOrderRequest;
 import com.ecommerce.orderservice.order_service.dto.OrderResponse;
+import com.ecommerce.orderservice.order_service.kafka.OrderEventPublisher;
+import com.ecommerce.orderservice.order_service.kafka.event.OrderCreatedEvent;
+import com.ecommerce.orderservice.order_service.mapper.OrderEventMapper;
 import com.ecommerce.orderservice.order_service.mapper.OrderMapper;
 import com.ecommerce.orderservice.order_service.model.Order;
 import com.ecommerce.orderservice.order_service.model.OrderItem;
@@ -29,9 +33,18 @@ public class OrderService {
 
     private final OrderMapper orderMapper;
 
+    private final OrderEventPublisher orderEventPublisher;
+
+    private final OrderEventMapper orderEventMapper;
+
     @Transactional
-    public OrderResponse createOrder(Long userId) {
-        CartResponse cart = cartClient.getCart(userId);
+    public OrderResponse createOrder(Long userId, String sessionId, CreateOrderRequest createOrderRequest) {
+        CartResponse cart = null;
+        if (userId != null) {
+            cart = cartClient.getCart(userId);
+        } else if (sessionId != null) {
+            cart = cartClient.getAnonymousCart(sessionId);
+        }
 
         if (cart.getItems() == null || cart.getItems().isEmpty()) {
             throw new BadRequestException(ErrorCode.CART_IS_EMPTY.getMessage());
@@ -48,6 +61,15 @@ public class OrderService {
 
         final Order order = Order.builder()
                 .userId(userId)
+                .email(createOrderRequest.email())
+                .firstName(createOrderRequest.firstName())
+                .lastName(createOrderRequest.lastName())
+                .phoneNumber(createOrderRequest.phoneNumber())
+                .street(createOrderRequest.street())
+                .houseNumber(createOrderRequest.houseNumber())
+                .city(createOrderRequest.city())
+                .zipCode(createOrderRequest.zipCode())
+                .country(createOrderRequest.country())
                 .totalAmount(BigDecimal.ZERO)
                 .items(new ArrayList<>())
                 .build();
@@ -75,11 +97,19 @@ public class OrderService {
 
         Order savedOrder = orderRepository.save(order);
 
-        cartClient.clearCart(userId);
+        OrderCreatedEvent orderCreatedEvent = orderEventMapper.ordertToOrderCreatedEvent(savedOrder);
+        orderEventPublisher.publish(orderCreatedEvent);
+
+        if (userId != null) {
+            cartClient.clearCart(userId);
+        } else if (sessionId != null) {
+            cartClient.clearAnonymousCart(sessionId);
+        }
 
         return orderMapper.orderToOrderResponse(savedOrder);
     }
 
+    @Transactional(readOnly = true)
     public List<OrderResponse> getUsersOrders(Long userId) {
         return orderRepository.findAllByUserId(userId)
                 .stream()
@@ -87,6 +117,7 @@ public class OrderService {
                 .toList();
     }
 
+    @Transactional(readOnly = true)
     public OrderResponse getOrderById(Long userId, Long orderId) {
         Order order = getOrderByIdAndUserIdOrThrow(orderId, userId);
 

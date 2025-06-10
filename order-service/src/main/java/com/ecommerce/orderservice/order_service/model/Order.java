@@ -22,8 +22,35 @@ public class Order {
     @GeneratedValue
     private Long id;
 
-    @Column(nullable = false)
+    @Column(nullable = true)
     private Long userId;
+
+    @Column(nullable = false)
+    private String email;
+
+    @Column(nullable = false)
+    private  String firstName;
+
+    @Column(nullable = false)
+    private  String lastName;
+
+    @Column(nullable = false)
+    private String phoneNumber;
+
+    @Column(nullable = false)
+    private String street;
+
+    @Column(nullable = false)
+    private String houseNumber;
+
+    @Column(nullable = false)
+    private String city;
+
+    @Column(nullable = false)
+    private String zipCode;
+
+    @Column(nullable = false)
+    private String country;
 
     @Enumerated(EnumType.STRING)
     private OrderStatus orderStatus;
