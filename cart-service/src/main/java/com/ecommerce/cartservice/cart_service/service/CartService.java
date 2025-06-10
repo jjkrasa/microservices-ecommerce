@@ -6,6 +6,7 @@ import com.ecommerce.cartservice.cart_service.model.Cart;
 import com.ecommerce.cartservice.cart_service.model.CartItem;
 import com.ecommerce.cartservice.cart_service.repository.CartRepository;
 import com.ecommerce.exceptionlib.ErrorCode;
+import com.ecommerce.exceptionlib.exception.BadRequestException;
 import com.ecommerce.exceptionlib.exception.NotFoundException;
 import jakarta.transaction.Transactional;
 import jakarta.validation.Valid;
@@ -13,6 +14,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
@@ -26,11 +28,20 @@ public class CartService {
 
     private final ProductClient productClient;
 
-    public CartResponse getCart(Long userId) {
-        Cart cart = getOrCreateCartByUserId(userId);
+    public CartResponse getCart(Long userId, String sessionId) {
+        Cart cart = getOrCreateCartByUserIdOrSessionId(userId, sessionId);
 
-        List<Long> productIds = cart
-                .getItems()
+        List<CartItem> items = cart.getItems();
+
+        if (items.isEmpty()) {
+            return CartResponse.builder()
+                    .id(cart.getId())
+                    .userId(cart.getUserId())
+                    .items(Collections.emptyList())
+                    .build();
+        }
+
+        List<Long> productIds = items
                 .stream()
                 .map(CartItem::getProductId)
                 .toList();
@@ -41,8 +52,7 @@ public class CartService {
                 .stream()
                 .collect(Collectors.toMap(ProductResponse::id, Function.identity()));
 
-        List<CartItemResponse> cartItemResponse = cart
-                .getItems()
+        List<CartItemResponse> cartItemResponse = items
                 .stream()
                 .map(
                         item -> CartItemResponse.builder()
@@ -61,10 +71,10 @@ public class CartService {
     }
 
     @Transactional
-    public void addItemToCart(Long userId, AddCartItemRequest request) {
+    public void addItemToCart(Long userId, String sessionId, AddCartItemRequest request) {
         productClient.getProductById(request.getProductId());
 
-        Cart cart = cartRepository.findByUserId(userId).orElseGet(() -> createNewCart(userId));
+        Cart cart = getOrCreateCartByUserIdOrSessionId(userId, sessionId);
 
         cart
                 .getItems()
@@ -85,16 +95,16 @@ public class CartService {
     }
 
     @Transactional
-    public void clearCart(Long userId) {
-        Cart cart = getCartByUserIdOrThrow(userId);
+    public void clearCart(Long userId, String sessionId) {
+        Cart cart = getCartByUserIdOrSessionIdOrThrow(userId, sessionId);
 
         cart.getItems().clear();
         cartRepository.save(cart);
     }
 
     @Transactional
-    public void updateCartItemQuantity(Long userId, Long cartItemId, @Valid UpdateCartItemRequest request) {
-        Cart cart = getCartByUserIdOrThrow(userId);
+    public void updateCartItemQuantity(Long userId, String sessionId, Long cartItemId, @Valid UpdateCartItemRequest request) {
+        Cart cart = getCartByUserIdOrSessionIdOrThrow(userId, sessionId);
 
         CartItem cartItem = cart
                 .getItems()
@@ -113,8 +123,8 @@ public class CartService {
     }
 
     @Transactional
-    public void deleteCartItem(Long userId, Long cartItemId) {
-        Cart cart = getCartByUserIdOrThrow(userId);
+    public void deleteCartItem(Long userId, String sessionId, Long cartItemId) {
+        Cart cart = getCartByUserIdOrSessionIdOrThrow(userId, sessionId);
 
         boolean isRemoved = cart.getItems().removeIf(cartItem -> cartItem.getId().equals(cartItemId));
 
@@ -125,15 +135,39 @@ public class CartService {
         cartRepository.save(cart);
     }
 
-    private Cart createNewCart(Long userId) {
-        return Cart.builder().userId(userId).items(new ArrayList<>()).build();
+    private Cart createNewCart(Long userId, String sessionId) {
+        return Cart.builder().
+                userId(userId)
+                .sessionId(sessionId)
+                .items(new ArrayList<>())
+                .build();
+    }
+
+    private Cart getCartByUserIdOrSessionIdOrThrow(Long userId, String sessionId) {
+        if (userId != null) {
+            return getCartByUserIdOrThrow(userId);
+        } else if (sessionId != null) {
+            return getCartBySessionIdOrThrow(sessionId);
+        }
+
+        throw new BadRequestException(ErrorCode.MISSING_USER_OR_SESSION.getMessage());
     }
 
     private Cart getCartByUserIdOrThrow(Long userId) {
         return cartRepository.findByUserId(userId).orElseThrow(() -> new NotFoundException(ErrorCode.CART_DOES_NOT_EXIST.getMessage()));
     }
 
-    private Cart getOrCreateCartByUserId(Long userId) {
-        return cartRepository.findByUserId(userId).orElseGet(() -> cartRepository.save(createNewCart(userId)));
+    private Cart getCartBySessionIdOrThrow(String sessionId) {
+        return cartRepository.findBySessionId(sessionId).orElseThrow(() -> new NotFoundException(ErrorCode.CART_DOES_NOT_EXIST.getMessage()));
+    }
+
+    private Cart getOrCreateCartByUserIdOrSessionId(Long userId, String sessionId) {
+        if (userId != null) {
+            return cartRepository.findByUserId(userId).orElseGet(() -> createNewCart(userId, null));
+        } else if (sessionId != null && !sessionId.isBlank()) {
+            return cartRepository.findBySessionId(sessionId).orElseGet(() -> createNewCart(null, sessionId));
+        }
+
+        throw new BadRequestException(ErrorCode.MISSING_USER_OR_SESSION.getMessage());
     }
 }

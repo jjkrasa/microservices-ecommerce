@@ -65,6 +65,12 @@ spring:
                 roles:
                   - ROLE_ADMIN
 
+
+        - id: anonymous-cart
+          uri: lb://${CART_APP_NAME}
+          predicates:
+            - Path=/api/carts/anonymous, /api/carts/anonymous/**
+
         - id: cart
           uri: lb://${CART_APP_NAME}
           predicates:

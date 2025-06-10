@@ -12,6 +12,8 @@ public enum ErrorCode {
 
     INVALID_INPUT("Invalid input"),
 
+    MISSING_USER_OR_SESSION("User or session must be provided"),
+
     EMAIL_ALREADY_EXISTS("User with this email already exists"),
     PASSWORDS_DO_NOT_MATCH("Passwords do not match"),
     INVALID_CREDENTIALS("Invalid email or password"),
@@ -25,6 +27,7 @@ public enum ErrorCode {
 
     CART_DOES_NOT_EXIST("Cart does not exist"),
     PRODUCT_WAS_NOT_FOUND_IN_CART("Product was not found in cart"),
+    SESSION_ID_IS_EMPTY("Session id is empty"),
 
     CART_IS_EMPTY("Cart is empty"),
     INSUFFICIENT_STOCK("Insufficient stock for product"),

@@ -22,8 +22,10 @@ public class Cart {
     @GeneratedValue
     private Long id;
 
-    @Column(nullable = false)
     private Long userId;
+
+    @Column(unique = true)
+    private String sessionId;
 
     @OneToMany(mappedBy = "cart", cascade = ALL, orphanRemoval = true, fetch = LAZY)
     private List<CartItem> items = new ArrayList<>();
