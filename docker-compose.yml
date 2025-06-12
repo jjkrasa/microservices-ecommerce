@@ -230,6 +230,18 @@ services:
       eureka-server:
         condition: service_healthy
 
+  notification-service:
+    build:
+      context: .
+      dockerfile: notification-service/Dockerfile
+    container_name: ${NOTIFICATION_SERVICE_CONTAINER_NAME}
+    environment:
+      NOTIFICATION_SERVICE_APP_NAME: ${NOTIFICATION_SERVICE_APP_NAME}
+      KAFKA_SERVER: ${KAFKA_HOST}:${KAFKA_PORT}
+    networks:
+      - eshop-network
+
+
 
 volumes:
   postgres-auth-data: {}
