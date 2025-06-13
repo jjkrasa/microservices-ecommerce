@@ -238,6 +238,11 @@ services:
     environment:
       NOTIFICATION_SERVICE_APP_NAME: ${NOTIFICATION_SERVICE_APP_NAME}
       KAFKA_SERVER: ${KAFKA_HOST}:${KAFKA_PORT}
+      MAIL_HOST: ${MAIL_HOST}
+      MAIL_PORT: ${MAIL_PORT}
+      MAIL_USERNAME: ${MAIL_USERNAME}
+      MAIL_PASSWORD: ${MAIL_PASSWORD}
+      MAIL_FROM: ${MAIL_FROM}
     networks:
       - eshop-network
 
