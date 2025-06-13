@@ -19,6 +19,7 @@ public interface OrderEventMapper {
     OrderCreatedEvent ordertToOrderCreatedEvent(Order order);
 
     @Mapping(target = "productId", source = "productId")
+    @Mapping(target = "name", source = "name")
     @Mapping(target = "quantity", source = "quantity")
     @Mapping(target = "price", source = "price")
     OrderCreatedEvent.OrderItem orderItemToOrderCreatedEventItem(OrderItem orderItem);

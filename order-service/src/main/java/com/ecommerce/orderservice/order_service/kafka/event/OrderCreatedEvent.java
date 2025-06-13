@@ -32,6 +32,8 @@ public class OrderCreatedEvent {
 
         private Long productId;
 
+        private String name;
+
         private int quantity;
 
         private BigDecimal price;
