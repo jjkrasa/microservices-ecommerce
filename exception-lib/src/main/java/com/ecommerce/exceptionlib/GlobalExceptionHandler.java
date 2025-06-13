@@ -60,7 +60,7 @@ public class GlobalExceptionHandler {
                 status.value(),
                 status.getReasonPhrase(),
                 resolveErrorCode(ex.getMessage()),
-                Map.of("message", ex.getMessage())
+                Map.of("message", status != HttpStatus.INTERNAL_SERVER_ERROR ? ex.getMessage() : "Internal Server Error")
         );
 
         return new ResponseEntity<>(errorResponse, status);
@@ -69,6 +69,6 @@ public class GlobalExceptionHandler {
     private String resolveErrorCode(final String message) {
         return ErrorCode.getErrorCodeFromMessage(message)
                 .map(Enum::name)
-                .orElse("UNKNOWN_ERROR");
+                .orElse("INTERNAL_SERVER_ERROR");
     }
 }
