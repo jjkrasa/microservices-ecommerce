@@ -34,6 +34,8 @@ public enum ErrorCode {
     ORDER_CANNOT_BE_CANCELLED("Only orders with created status can be cancelled"),
     ORDER_NOT_FOUND("Order was not found"),
 
+    STOCK_CANT_BE_NEGATIVE("Stock cannot be negative"),
+
     ;
 
     private final String message;
