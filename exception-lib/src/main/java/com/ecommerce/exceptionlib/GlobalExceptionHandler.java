@@ -58,12 +58,24 @@ public class GlobalExceptionHandler {
             case RuntimeException ignored -> HttpStatus.INTERNAL_SERVER_ERROR;
         };
 
+        String errorCode;
+        Map<String, String> errors;
+
+        if (ex instanceof BadRequestException bre && bre.getErrors() != null) {
+            errorCode = ErrorCode.INVALID_INPUT.name();
+            errors = bre.getErrors();
+        } else {
+            String message = ex.getMessage() != null ? ex.getMessage() : "Internal Server Error";
+            errorCode = resolveErrorCode(message);
+            errors = Map.of("message", message);
+        }
+
         ErrorResponse errorResponse = new ErrorResponse(
                 LocalDateTime.now().format(formatter),
                 status.value(),
                 status.getReasonPhrase(),
-                resolveErrorCode(ex.getMessage()),
-                Map.of("message", status != HttpStatus.INTERNAL_SERVER_ERROR ? ex.getMessage() : "Internal Server Error")
+                errorCode,
+                errors
         );
 
         return new ResponseEntity<>(errorResponse, status);
