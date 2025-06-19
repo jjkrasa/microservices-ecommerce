@@ -8,10 +8,10 @@ import com.ecommerce.cartservice.cart_service.repository.CartRepository;
 import com.ecommerce.exceptionlib.ErrorCode;
 import com.ecommerce.exceptionlib.exception.BadRequestException;
 import com.ecommerce.exceptionlib.exception.NotFoundException;
-import jakarta.transaction.Transactional;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -28,6 +28,7 @@ public class CartService {
 
     private final ProductClient productClient;
 
+    @Transactional(readOnly = true)
     public CartResponse getCart(Long userId, String sessionId) {
         Cart cart = getOrCreateCartByUserIdOrSessionId(userId, sessionId);
 
