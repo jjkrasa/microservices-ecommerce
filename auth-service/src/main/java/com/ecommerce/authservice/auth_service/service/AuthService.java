@@ -9,10 +9,10 @@ import com.ecommerce.exceptionlib.ErrorCode;
 import com.ecommerce.exceptionlib.exception.BadRequestException;
 import com.ecommerce.exceptionlib.exception.ConflictException;
 import com.ecommerce.exceptionlib.exception.UnauthorizedException;
-import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
@@ -39,6 +39,7 @@ public class AuthService {
         userRepository.save(user);
     }
 
+    @Transactional(readOnly = true)
     public String login(LoginRequest request) {
         User user = userRepository.findByEmailIgnoreCase(request.getEmail())
                 .orElseThrow(() -> new UnauthorizedException(ErrorCode.INVALID_CREDENTIALS.getMessage()));
