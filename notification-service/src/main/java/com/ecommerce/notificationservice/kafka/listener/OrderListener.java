@@ -1,4 +1,4 @@
-package com.ecommerce.notificationservice.listener;
+package com.ecommerce.notificationservice.kafka.listener;
 
 import com.ecommerce.notificationservice.dto.OrderCreatedEvent;
 import com.ecommerce.notificationservice.service.EmailService;
@@ -8,14 +8,14 @@ import org.springframework.stereotype.Component;
 
 @Component
 @RequiredArgsConstructor
-public class OrderCreatedListener {
+public class OrderListener {
 
     private final EmailService emailService;
 
     @KafkaListener(
             topics = "order-created",
             groupId = "${spring.kafka.consumer.group-id}",
-            containerFactory = "kafkaListenerContainerFactory"
+            containerFactory = "orderCreatedListenerContainerFactory"
     )
     public void handleOrderCreatedEvent(OrderCreatedEvent event) {
         emailService.sendOrderConfirmationEmail(event);
