@@ -1,6 +1,6 @@
 package com.ecommerce.notificationservice.config;
 
-import com.ecommerce.notificationservice.dto.OrderCreatedEvent;
+import com.ecommerce.notificationservice.kafka.event.OrderCreatedEvent;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.common.serialization.StringDeserializer;
 import org.springframework.beans.factory.annotation.Value;

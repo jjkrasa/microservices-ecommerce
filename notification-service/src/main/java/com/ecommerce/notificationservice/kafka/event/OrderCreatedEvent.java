@@ -1,4 +1,4 @@
-package com.ecommerce.notificationservice.dto;
+package com.ecommerce.notificationservice.kafka.event;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;

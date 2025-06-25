@@ -1,6 +1,6 @@
 package com.ecommerce.notificationservice.kafka.listener;
 
-import com.ecommerce.notificationservice.dto.OrderCreatedEvent;
+import com.ecommerce.notificationservice.kafka.event.OrderCreatedEvent;
 import com.ecommerce.notificationservice.service.EmailService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.kafka.annotation.KafkaListener;
