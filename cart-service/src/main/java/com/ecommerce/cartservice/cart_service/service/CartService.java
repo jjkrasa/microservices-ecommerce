@@ -1,7 +1,11 @@
 package com.ecommerce.cartservice.cart_service.service;
 
 import com.ecommerce.cartservice.cart_service.client.ProductClient;
-import com.ecommerce.cartservice.cart_service.dto.*;
+import com.ecommerce.cartservice.cart_service.dto.AddCartItemRequest;
+import com.ecommerce.cartservice.cart_service.dto.CartResponse;
+import com.ecommerce.cartservice.cart_service.dto.ProductResponse;
+import com.ecommerce.cartservice.cart_service.dto.UpdateCartItemRequest;
+import com.ecommerce.cartservice.cart_service.mapper.CartMapper;
 import com.ecommerce.cartservice.cart_service.model.Cart;
 import com.ecommerce.cartservice.cart_service.model.CartItem;
 import com.ecommerce.cartservice.cart_service.repository.CartRepository;
@@ -16,9 +20,6 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.Map;
-import java.util.function.Function;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -28,6 +29,8 @@ public class CartService {
 
     private final ProductClient productClient;
 
+    private final CartMapper cartMapper;
+
     @Transactional(readOnly = true)
     public CartResponse getCart(Long userId, String sessionId) {
         Cart cart = getOrCreateCartByUserIdOrSessionId(userId, sessionId);
@@ -35,11 +38,7 @@ public class CartService {
         List<CartItem> items = cart.getItems();
 
         if (items.isEmpty()) {
-            return CartResponse.builder()
-                    .id(cart.getId())
-                    .userId(cart.getUserId())
-                    .items(Collections.emptyList())
-                    .build();
+            return cartMapper.cartToCartResponse(cart, Collections.emptyList());
         }
 
         List<Long> productIds = items
@@ -49,26 +48,7 @@ public class CartService {
 
         List<ProductResponse> productsByIds = productClient.getProductsByIds(productIds);
 
-        Map<Long, ProductResponse> productMap = productsByIds
-                .stream()
-                .collect(Collectors.toMap(ProductResponse::id, Function.identity()));
-
-        List<CartItemResponse> cartItemResponse = items
-                .stream()
-                .map(
-                        item -> CartItemResponse.builder()
-                                .id(item.getId())
-                                .quantity(item.getQuantity())
-                                .product(productMap.get(item.getProductId()))
-                                .build()
-                )
-                .toList();
-
-        return CartResponse.builder()
-                .id(cart.getId())
-                .userId(cart.getUserId())
-                .items(cartItemResponse)
-                .build();
+        return cartMapper.cartToCartResponse(cart, productsByIds);
     }
 
     @Transactional
@@ -84,12 +64,7 @@ public class CartService {
                 .findFirst()
                 .ifPresentOrElse(
                         cartItem -> cartItem.setQuantity(cartItem.getQuantity() + request.getQuantity()),
-                        () -> cart.getItems().add(
-                                CartItem.builder()
-                                        .cart(cart)
-                                        .productId(request.getProductId())
-                                        .quantity(request.getQuantity())
-                                        .build())
+                        () -> cart.getItems().add(cartMapper.addCartItemRequestToCartItem(cart, request))
                 );
 
         cartRepository.save(cart);
@@ -137,8 +112,8 @@ public class CartService {
     }
 
     private Cart createNewCart(Long userId, String sessionId) {
-        return Cart.builder().
-                userId(userId)
+        return Cart.builder()
+                .userId(userId)
                 .sessionId(sessionId)
                 .items(new ArrayList<>())
                 .build();
