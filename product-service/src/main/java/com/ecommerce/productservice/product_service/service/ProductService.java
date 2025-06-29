@@ -2,10 +2,8 @@ package com.ecommerce.productservice.product_service.service;
 
 import com.ecommerce.exceptionlib.ErrorCode;
 import com.ecommerce.exceptionlib.exception.NotFoundException;
-import com.ecommerce.productservice.product_service.dto.CreateProductRequest;
-import com.ecommerce.productservice.product_service.dto.PagedResponse;
-import com.ecommerce.productservice.product_service.dto.ProductResponse;
-import com.ecommerce.productservice.product_service.dto.UpdateProductRequest;
+import com.ecommerce.productservice.product_service.client.StockClient;
+import com.ecommerce.productservice.product_service.dto.*;
 import com.ecommerce.productservice.product_service.mapper.ProductMapper;
 import com.ecommerce.productservice.product_service.model.Category;
 import com.ecommerce.productservice.product_service.model.Product;
@@ -19,6 +17,8 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -32,11 +32,18 @@ public class ProductService {
 
     private final ProductMapper productMapper;
 
+    private final StockClient stockClient;
+
     @Transactional(readOnly = true)
     public ProductResponse getProductById(Long productId) {
         Product product = getProductByIdOrThrow(productId);
+        ProductResponse productResponse = productMapper.productToProductResponse(product);
 
-        return productMapper.productToProductResponse(product);
+        StockResponse stock = stockClient.getStockByProductId(productId);
+
+        productResponse.setAvailableQuantity(stock.availableQuantity());
+
+        return productResponse;
     }
 
     @Transactional(readOnly = true)
@@ -46,16 +53,46 @@ public class ProductService {
     ) {
         Page<Product> productsPage = productRepository.findAll(specification, pageable);
 
-        return productMapper.pageToPagedResponse(productsPage);
+        List<Long> productIds = productsPage.getContent().stream().map(Product::getId).toList();
+
+        List<StockResponse> stocks = stockClient.getStocksByProductIds(productIds);
+        Map<Long, Integer> stockMap = stocks.stream().collect(Collectors.toMap(StockResponse::productId, StockResponse::availableQuantity));
+
+        List<ProductResponse> productResponse = productsPage
+                .getContent()
+                .stream()
+                .map(product -> {
+                    Integer availableQuantity = stockMap.getOrDefault(product.getId(), 0);
+
+                    return productMapper.productToProductResponse(product, availableQuantity);
+                })
+                .toList();
+
+        return new PagedResponse<>(
+                productResponse,
+                productsPage.getNumber(),
+                productsPage.getSize(),
+                productsPage.getTotalElements(),
+                productsPage.getTotalPages(),
+                productsPage.hasPrevious(),
+                productsPage.hasNext()
+        );
     }
 
     @Transactional(readOnly = true)
     public List<ProductResponse> getProductsByIds(List<Long> productIds) {
         List<Product> products = productRepository.findAllById(productIds);
 
+        List<StockResponse> stocks = stockClient.getStocksByProductIds(productIds);
+        Map<Long, Integer> stockMap = stocks.stream().collect(Collectors.toMap(StockResponse::productId, StockResponse::availableQuantity));
+
         return products
                 .stream()
-                .map(productMapper::productToProductResponse)
+                .map(product -> {
+                    Integer availableQuantity = stockMap.getOrDefault(product.getId(), 0);
+
+                    return productMapper.productToProductResponse(product, availableQuantity);
+                })
                 .toList();
     }
 
@@ -68,7 +105,9 @@ public class ProductService {
 
         productRepository.save(product);
 
-        return productMapper.productToProductResponse(product);
+        stockClient.createStock(product.getId(), new CreateStockRequest(request.getAvailableQuantity()));
+
+        return productMapper.productToProductResponse(product, request.getAvailableQuantity());
     }
 
     @Transactional
