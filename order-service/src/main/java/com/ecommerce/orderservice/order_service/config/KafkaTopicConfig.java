@@ -16,4 +16,22 @@ public class KafkaTopicConfig {
                 .replicas(1)
                 .build();
     }
+
+    @Bean
+    public NewTopic orderCancelledTopic() {
+        return TopicBuilder
+                .name("order-cancelled")
+                .partitions(3)
+                .replicas(1)
+                .build();
+    }
+
+    @Bean
+    public NewTopic orderReservedTopic() {
+        return TopicBuilder
+                .name("stock-reserve-requested")
+                .partitions(3)
+                .replicas(1)
+                .build();
+    }
 }

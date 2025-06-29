@@ -7,8 +7,11 @@ import com.ecommerce.orderservice.order_service.client.CartClient;
 import com.ecommerce.orderservice.order_service.dto.CartResponse;
 import com.ecommerce.orderservice.order_service.dto.CreateOrderRequest;
 import com.ecommerce.orderservice.order_service.dto.OrderResponse;
-import com.ecommerce.orderservice.order_service.kafka.OrderEventPublisher;
+import com.ecommerce.orderservice.order_service.kafka.publisher.OrderEventPublisher;
+import com.ecommerce.orderservice.order_service.kafka.publisher.StockEventPublisher;
+import com.ecommerce.orderservice.order_service.kafka.event.OrderCancelledEvent;
 import com.ecommerce.orderservice.order_service.kafka.event.OrderCreatedEvent;
+import com.ecommerce.orderservice.order_service.kafka.event.StockReserveRequestedEvent;
 import com.ecommerce.orderservice.order_service.mapper.OrderEventMapper;
 import com.ecommerce.orderservice.order_service.mapper.OrderMapper;
 import com.ecommerce.orderservice.order_service.model.Order;
@@ -36,6 +39,8 @@ public class OrderService {
     private final OrderEventPublisher orderEventPublisher;
 
     private final OrderEventMapper orderEventMapper;
+
+    private final StockEventPublisher stockEventPublisher;
 
     @Transactional
     public OrderResponse createOrder(Long userId, String sessionId, CreateOrderRequest createOrderRequest) {
@@ -98,7 +103,15 @@ public class OrderService {
         Order savedOrder = orderRepository.save(order);
 
         OrderCreatedEvent orderCreatedEvent = orderEventMapper.ordertToOrderCreatedEvent(savedOrder);
-        orderEventPublisher.publish(orderCreatedEvent);
+
+        orderEventPublisher.publishOrderCreatedEvent(orderCreatedEvent);
+
+        List<StockReserveRequestedEvent.ReserveItem> reserveItems = savedOrder.getItems()
+                .stream()
+                .map(item -> new StockReserveRequestedEvent.ReserveItem(item.getProductId(), item.getQuantity()))
+                .toList();
+        StockReserveRequestedEvent stockReserveRequestedEvent = new StockReserveRequestedEvent(savedOrder.getId(), reserveItems);
+        stockEventPublisher.publish(stockReserveRequestedEvent);
 
         if (userId != null) {
             cartClient.clearCart(userId);
@@ -134,6 +147,16 @@ public class OrderService {
 
         order.setOrderStatus(OrderStatus.CANCELLED);
         orderRepository.save(order);
+    }
+
+    @Transactional
+    public void cancelOrder(Long orderId, String reason) {
+        orderRepository.findById(orderId).ifPresent(order -> {
+            order.setOrderStatus(OrderStatus.CANCELLED);
+            orderRepository.save(order);
+
+            orderEventPublisher.publishOrderCancelledEvent(new OrderCancelledEvent(orderId, order.getEmail(), reason));
+        });
     }
 
     private Order getOrderByIdAndUserIdOrThrow(Long orderId, Long userId) {

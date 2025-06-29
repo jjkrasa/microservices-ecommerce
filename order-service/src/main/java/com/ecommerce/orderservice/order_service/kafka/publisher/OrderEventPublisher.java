@@ -1,5 +1,6 @@
-package com.ecommerce.orderservice.order_service.kafka;
+package com.ecommerce.orderservice.order_service.kafka.publisher;
 
+import com.ecommerce.orderservice.order_service.kafka.event.OrderCancelledEvent;
 import com.ecommerce.orderservice.order_service.kafka.event.OrderCreatedEvent;
 import lombok.RequiredArgsConstructor;
 import org.springframework.kafka.core.KafkaTemplate;
@@ -11,7 +12,11 @@ public class OrderEventPublisher {
 
     private final KafkaTemplate<String, Object> kafkaTemplate;
 
-    public void publish(OrderCreatedEvent event) {
+    public void publishOrderCreatedEvent(OrderCreatedEvent event) {
         kafkaTemplate.send("order-created", String.valueOf(event.getOrderId()), event);
+    }
+
+    public void publishOrderCancelledEvent(OrderCancelledEvent event) {
+        kafkaTemplate.send("order-cancelled", String.valueOf(event.getOrderId()), event);
     }
 }
