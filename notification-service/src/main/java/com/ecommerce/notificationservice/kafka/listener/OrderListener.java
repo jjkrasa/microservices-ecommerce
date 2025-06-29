@@ -1,5 +1,6 @@
 package com.ecommerce.notificationservice.kafka.listener;
 
+import com.ecommerce.notificationservice.kafka.event.OrderCancelledEvent;
 import com.ecommerce.notificationservice.kafka.event.OrderCreatedEvent;
 import com.ecommerce.notificationservice.service.EmailService;
 import lombok.RequiredArgsConstructor;
@@ -19,5 +20,14 @@ public class OrderListener {
     )
     public void handleOrderCreatedEvent(OrderCreatedEvent event) {
         emailService.sendOrderConfirmationEmail(event);
+    }
+
+    @KafkaListener(
+            topics = "order-cancelled",
+            groupId = "${spring.kafka.consumer.group-id}",
+            containerFactory = "orderCancelledListenerFactory"
+    )
+    public void handleOrderCancelledEvent(OrderCancelledEvent event) {
+        emailService.sendOrderCancelledEmail(event);
     }
 }

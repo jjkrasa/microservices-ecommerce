@@ -1,6 +1,7 @@
 package com.ecommerce.notificationservice.utils;
 
-import com.ecommerce.notificationservice.dto.OrderCreatedEvent;
+import com.ecommerce.notificationservice.kafka.event.OrderCancelledEvent;
+import com.ecommerce.notificationservice.kafka.event.OrderCreatedEvent;
 
 import java.math.BigDecimal;
 
@@ -8,7 +9,7 @@ public class OrderHtmlBuilder {
 
     private OrderHtmlBuilder() {}
 
-    public static String buildHtmlContent(OrderCreatedEvent event) {
+    public static String buildOrderCreatedHtmlContent(OrderCreatedEvent event) {
         StringBuilder html = new StringBuilder();
 
         html
@@ -46,6 +47,19 @@ public class OrderHtmlBuilder {
 
         html
                 .append("<p style=\"color:gray; font-size:12px;\">&copy; 2025 E-Commerce App</p>")
+                .append("</body></html>");
+
+        return html.toString();
+    }
+
+    public static String buildOrderCancelledHtmlContent(OrderCancelledEvent event) {
+        StringBuilder html = new StringBuilder();
+
+        html
+                .append("<html><body>")
+                .append("<h2>We're sorry! Your order has been cancelled.</h2>")
+                .append("<p><strong>Order #").append(event.getOrderId()).append("</p>")
+                .append("<p><strong>Reason: </p>").append(event.getReason()).append("</p>")
                 .append("</body></html>");
 
         return html.toString();
