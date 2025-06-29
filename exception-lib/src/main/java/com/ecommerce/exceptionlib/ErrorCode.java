@@ -35,6 +35,7 @@ public enum ErrorCode {
     ORDER_NOT_FOUND("Order was not found"),
 
     STOCK_CANT_BE_NEGATIVE("Stock cannot be negative"),
+    NOT_ENOUGH_STOCK_AVAILABLE("Not enough stock available"),
 
     ;
 
