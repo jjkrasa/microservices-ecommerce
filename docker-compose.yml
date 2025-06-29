@@ -22,6 +22,11 @@ services:
       KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
     networks:
       eshop-network:
+    healthcheck:
+      test: ["CMD-SHELL", "kafka-topics --bootstrap-server localhost:9092 --list"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
 
   eureka-server:
     build:
@@ -208,6 +213,52 @@ services:
     depends_on:
       postgres-order:
         condition: service_healthy
+      kafka:
+        condition: service_healthy
+
+  postgres-stock:
+    image: postgres:16
+    container_name: ${POSTGRES_STOCK_CONTAINER_NAME}
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${POSTGRES_STOCK_DB}
+      POSTGRES_USER: ${POSTGRES_STOCK_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_STOCK_PASSWORD}
+    volumes:
+      - postgres-stock-data:/var/lib/postgresql/data
+    ports:
+      - "${POSTGRES_STOCK_PORT:-5437}:5432"
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U ${POSTGRES_STOCK_USER} -d ${POSTGRES_STOCK_DB}" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      eshop-network:
+        aliases:
+          - ${POSTGRES_STOCK_HOST}
+
+  stock-service:
+    build:
+      context: .
+      dockerfile: stock-service/Dockerfile
+    container_name: stock-service
+    environment:
+      EUREKA_SERVER_URL: "http://${EUREKA_SERVER_HOST}:${EUREKA_SERVER_PORT}/eureka"
+      SPRING_DATASOURCE_URL: "jdbc:postgresql://${POSTGRES_STOCK_HOST}:5432/${POSTGRES_STOCK_DB}"
+      SPRING_DATASOURCE_USERNAME: ${POSTGRES_STOCK_USER}
+      SPRING_DATASOURCE_PASSWORD: ${POSTGRES_STOCK_PASSWORD}
+      SPRING_JPA_HIBERNATE_DDL_AUTO: update
+      STOCK_APP_NAME: ${STOCK_APP_NAME}
+      KAFKA_HOST: ${KAFKA_HOST}
+      KAFKA_PORT: ${KAFKA_PORT}
+    networks:
+      - eshop-network
+    depends_on:
+      postgres-order:
+        condition: service_healthy
+      kafka:
+        condition: service_healthy
 
   api-gateway:
     build:
@@ -245,6 +296,9 @@ services:
       MAIL_FROM: ${MAIL_FROM}
     networks:
       - eshop-network
+    depends_on:
+      kafka:
+        condition: service_healthy
 
 
 
@@ -253,6 +307,7 @@ volumes:
   postgres-product-data: {}
   postgres-cart-data: {}
   postgres-order-data: {}
+  postgres-stock-data: {}
   product-images: {}
 
 networks:
