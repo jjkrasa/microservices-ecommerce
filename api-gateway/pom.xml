@@ -11,7 +11,7 @@
 	<artifactId>api-gateway</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
 	<name>api-gateway</name>
-	<description>Eureka Discovery Server for Ecommerce Microservices</description>
+	<description>API Gateway for ecommerce</description>
 	<url/>
 	<licenses>
 		<license/>
