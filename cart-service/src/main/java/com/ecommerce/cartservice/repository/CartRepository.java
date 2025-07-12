@@ -1,6 +1,6 @@
-package com.ecommerce.cartservice.cart_service.repository;
+package com.ecommerce.cartservice.repository;
 
-import com.ecommerce.cartservice.cart_service.model.Cart;
+import com.ecommerce.cartservice.model.Cart;
 import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 

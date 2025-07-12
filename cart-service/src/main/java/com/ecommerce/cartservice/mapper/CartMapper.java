@@ -1,11 +1,11 @@
-package com.ecommerce.cartservice.cart_service.mapper;
+package com.ecommerce.cartservice.mapper;
 
-import com.ecommerce.cartservice.cart_service.dto.AddCartItemRequest;
-import com.ecommerce.cartservice.cart_service.dto.CartItemResponse;
-import com.ecommerce.cartservice.cart_service.dto.CartResponse;
-import com.ecommerce.cartservice.cart_service.dto.ProductResponse;
-import com.ecommerce.cartservice.cart_service.model.Cart;
-import com.ecommerce.cartservice.cart_service.model.CartItem;
+import com.ecommerce.cartservice.dto.AddCartItemRequest;
+import com.ecommerce.cartservice.dto.CartItemResponse;
+import com.ecommerce.cartservice.dto.CartResponse;
+import com.ecommerce.cartservice.dto.ProductResponse;
+import com.ecommerce.cartservice.model.Cart;
+import com.ecommerce.cartservice.model.CartItem;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 

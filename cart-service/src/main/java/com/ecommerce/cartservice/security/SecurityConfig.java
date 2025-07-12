@@ -1,4 +1,4 @@
-package com.ecommerce.cartservice.cart_service.security;
+package com.ecommerce.cartservice.security;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

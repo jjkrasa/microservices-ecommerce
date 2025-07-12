@@ -1,4 +1,4 @@
-package com.ecommerce.cartservice.cart_service.model;
+package com.ecommerce.cartservice.model;
 
 import jakarta.persistence.*;
 import lombok.*;

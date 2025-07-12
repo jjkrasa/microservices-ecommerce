@@ -1,4 +1,4 @@
-package com.ecommerce.cartservice.cart_service.util;
+package com.ecommerce.cartservice.util;
 
 import org.springframework.http.ResponseCookie;
 

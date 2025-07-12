@@ -1,10 +1,10 @@
-package com.ecommerce.cartservice.cart_service.controller;
+package com.ecommerce.cartservice.controller;
 
-import com.ecommerce.cartservice.cart_service.dto.AddCartItemRequest;
-import com.ecommerce.cartservice.cart_service.dto.CartResponse;
-import com.ecommerce.cartservice.cart_service.dto.UpdateCartItemRequest;
-import com.ecommerce.cartservice.cart_service.service.CartService;
-import com.ecommerce.cartservice.cart_service.util.CookieUtil;
+import com.ecommerce.cartservice.dto.AddCartItemRequest;
+import com.ecommerce.cartservice.dto.CartResponse;
+import com.ecommerce.cartservice.dto.UpdateCartItemRequest;
+import com.ecommerce.cartservice.service.CartService;
+import com.ecommerce.cartservice.util.CookieUtil;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;

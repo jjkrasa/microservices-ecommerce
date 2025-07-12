@@ -1,4 +1,4 @@
-package com.ecommerce.cartservice.cart_service;
+package com.ecommerce.cartservice;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;

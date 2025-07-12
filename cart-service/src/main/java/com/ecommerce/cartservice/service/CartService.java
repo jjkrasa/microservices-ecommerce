@@ -1,14 +1,14 @@
-package com.ecommerce.cartservice.cart_service.service;
+package com.ecommerce.cartservice.service;
 
-import com.ecommerce.cartservice.cart_service.client.ProductClient;
-import com.ecommerce.cartservice.cart_service.dto.AddCartItemRequest;
-import com.ecommerce.cartservice.cart_service.dto.CartResponse;
-import com.ecommerce.cartservice.cart_service.dto.ProductResponse;
-import com.ecommerce.cartservice.cart_service.dto.UpdateCartItemRequest;
-import com.ecommerce.cartservice.cart_service.mapper.CartMapper;
-import com.ecommerce.cartservice.cart_service.model.Cart;
-import com.ecommerce.cartservice.cart_service.model.CartItem;
-import com.ecommerce.cartservice.cart_service.repository.CartRepository;
+import com.ecommerce.cartservice.client.ProductClient;
+import com.ecommerce.cartservice.dto.AddCartItemRequest;
+import com.ecommerce.cartservice.dto.CartResponse;
+import com.ecommerce.cartservice.dto.ProductResponse;
+import com.ecommerce.cartservice.dto.UpdateCartItemRequest;
+import com.ecommerce.cartservice.mapper.CartMapper;
+import com.ecommerce.cartservice.model.Cart;
+import com.ecommerce.cartservice.model.CartItem;
+import com.ecommerce.cartservice.repository.CartRepository;
 import com.ecommerce.exceptionlib.ErrorCode;
 import com.ecommerce.exceptionlib.exception.BadRequestException;
 import com.ecommerce.exceptionlib.exception.NotFoundException;

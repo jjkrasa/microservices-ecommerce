@@ -1,6 +1,6 @@
-package com.ecommerce.cartservice.cart_service.client;
+package com.ecommerce.cartservice.client;
 
-import com.ecommerce.cartservice.cart_service.dto.ProductResponse;
+import com.ecommerce.cartservice.dto.ProductResponse;
 import org.springframework.cloud.openfeign.CollectionFormat;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.GetMapping;
