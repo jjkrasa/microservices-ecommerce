@@ -112,7 +112,7 @@ class AuthServiceTest {
     }
 
     @Test
-    public void login__successful() {
+    public void login_successful() {
         when(userRepository.findByEmailIgnoreCase(registerRequest.getEmail())).thenReturn(Optional.of(user));
         when(passwordEncoder.matches(loginRequest.getPassword(), user.getPassword())).thenReturn(true);
         when(jwtService.generateToken(user)).thenReturn("JWT");
