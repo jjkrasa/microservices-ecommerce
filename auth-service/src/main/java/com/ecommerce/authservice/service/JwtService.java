@@ -1,6 +1,6 @@
-package com.ecommerce.authservice.auth_service.service;
+package com.ecommerce.authservice.service;
 
-import com.ecommerce.authservice.auth_service.model.User;
+import com.ecommerce.authservice.model.User;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.io.Decoders;

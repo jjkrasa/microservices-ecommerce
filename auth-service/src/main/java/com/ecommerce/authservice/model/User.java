@@ -1,4 +1,4 @@
-package com.ecommerce.authservice.auth_service.model;
+package com.ecommerce.authservice.model;
 
 import jakarta.persistence.*;
 import lombok.*;

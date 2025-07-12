@@ -1,8 +1,8 @@
-package com.ecommerce.authservice.auth_service.controller;
+package com.ecommerce.authservice.controller;
 
-import com.ecommerce.authservice.auth_service.dto.LoginRequest;
-import com.ecommerce.authservice.auth_service.dto.RegisterRequest;
-import com.ecommerce.authservice.auth_service.service.AuthService;
+import com.ecommerce.authservice.dto.LoginRequest;
+import com.ecommerce.authservice.dto.RegisterRequest;
+import com.ecommerce.authservice.service.AuthService;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;

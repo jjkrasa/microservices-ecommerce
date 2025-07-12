@@ -1,6 +1,6 @@
-package com.ecommerce.authservice.auth_service.repository;
+package com.ecommerce.authservice.repository;
 
-import com.ecommerce.authservice.auth_service.model.User;
+import com.ecommerce.authservice.model.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.Optional;

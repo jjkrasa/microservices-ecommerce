@@ -1,4 +1,4 @@
-package com.ecommerce.authservice.auth_service.dto;
+package com.ecommerce.authservice.dto;
 
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;

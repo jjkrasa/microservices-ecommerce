@@ -1,10 +1,10 @@
-package com.ecommerce.authservice.auth_service.service;
+package com.ecommerce.authservice.service;
 
-import com.ecommerce.authservice.auth_service.dto.LoginRequest;
-import com.ecommerce.authservice.auth_service.dto.RegisterRequest;
-import com.ecommerce.authservice.auth_service.mapper.UserMapper;
-import com.ecommerce.authservice.auth_service.model.User;
-import com.ecommerce.authservice.auth_service.repository.UserRepository;
+import com.ecommerce.authservice.dto.LoginRequest;
+import com.ecommerce.authservice.dto.RegisterRequest;
+import com.ecommerce.authservice.mapper.UserMapper;
+import com.ecommerce.authservice.model.User;
+import com.ecommerce.authservice.repository.UserRepository;
 import com.ecommerce.exceptionlib.ErrorCode;
 import com.ecommerce.exceptionlib.exception.BadRequestException;
 import com.ecommerce.exceptionlib.exception.ConflictException;

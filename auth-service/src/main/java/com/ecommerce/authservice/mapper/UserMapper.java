@@ -1,8 +1,8 @@
-package com.ecommerce.authservice.auth_service.mapper;
+package com.ecommerce.authservice.mapper;
 
-import com.ecommerce.authservice.auth_service.dto.RegisterRequest;
-import com.ecommerce.authservice.auth_service.model.Role;
-import com.ecommerce.authservice.auth_service.model.User;
+import com.ecommerce.authservice.dto.RegisterRequest;
+import com.ecommerce.authservice.model.Role;
+import com.ecommerce.authservice.model.User;
 import org.mapstruct.AfterMapping;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
