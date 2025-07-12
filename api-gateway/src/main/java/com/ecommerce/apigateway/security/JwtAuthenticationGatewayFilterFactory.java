@@ -1,4 +1,4 @@
-package com.ecommerce.api_gateway.security;
+package com.ecommerce.apigateway.security;
 
 import lombok.Getter;
 import lombok.Setter;

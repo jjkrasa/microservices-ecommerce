@@ -1,4 +1,4 @@
-package com.ecommerce.api_gateway.security;
+package com.ecommerce.apigateway.security;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
