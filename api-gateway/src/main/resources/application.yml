@@ -12,10 +12,24 @@ spring:
   cloud:
     gateway:
       routes:
+        - id: docs-auth
+          uri: lb://${AUTH_APP_NAME}
+          predicates:
+            - Path=/${AUTH_APP_NAME}/v3/api-docs
+          filters:
+            - StripPrefix=1
+
         - id: auth
           uri: lb://${AUTH_APP_NAME}
           predicates:
             - Path=/api/auth/**
+
+        - id: docs-product
+          uri: lb://${PRODUCT_APP_NAME}
+          predicates:
+            - Path=/${PRODUCT_APP_NAME}/v3/api-docs
+          filters:
+            - StripPrefix=1
 
         - id: public-product
           uri: lb://${PRODUCT_APP_NAME}
@@ -66,6 +80,13 @@ spring:
                   - ROLE_ADMIN
 
 
+        - id: docs-cart
+          uri: lb://${CART_APP_NAME}
+          predicates:
+            - Path=/${CART_APP_NAME}/v3/api-docs
+          filters:
+            - StripPrefix=1
+
         - id: anonymous-cart
           uri: lb://${CART_APP_NAME}
           predicates:
@@ -82,6 +103,14 @@ spring:
                   - ROLE_USER
                   - ROLE_ADMIN
 
+
+        - id: docs-order
+          uri: lb://${ORDER_APP_NAME}
+          predicates:
+            - Path=/${ORDER_APP_NAME}/v3/api-docs
+          filters:
+            - StripPrefix=1
+
         - id: anonymous-order
           uri: lb://${ORDER_APP_NAME}
           predicates:
@@ -97,6 +126,29 @@ spring:
                 roles:
                   - ROLE_USER
                   - ROLE_ADMIN
+
+
+springdoc:
+  swagger-ui:
+    urls:
+      - name: ${AUTH_APP_NAME}
+        url: /${AUTH_APP_NAME}/v3/api-docs
+
+      - name: ${PRODUCT_APP_NAME}
+        url: /${PRODUCT_APP_NAME}/v3/api-docs
+
+      - name: ${CART_APP_NAME}
+        url: /${CART_APP_NAME}/v3/api-docs
+
+      - name: ${ORDER_APP_NAME}
+        url: /${ORDER_APP_NAME}/v3/api-docs
+
+
+    path: /swagger-ui.html
+    enabled: true
+  api-docs:
+    path: /v3/api-docs
+    enabled: true
 
 logging:
   level:
