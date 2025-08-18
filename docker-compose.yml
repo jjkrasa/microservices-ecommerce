@@ -228,6 +228,8 @@ services:
         condition: service_healthy
       eureka-server:
         condition: service_healthy
+      stock-service:
+        condition: service_healthy
 
   cart-service:
     build:
@@ -248,6 +250,8 @@ services:
       postgres-cart:
         condition: service_healthy
       eureka-server:
+        condition: service_healthy
+      product-service:
         condition: service_healthy
 
   order-service:
@@ -271,6 +275,8 @@ services:
       postgres-order:
         condition: service_healthy
       eureka-server:
+        condition: service_healthy
+      cart-service:
         condition: service_healthy
       kafka:
         condition: service_healthy
