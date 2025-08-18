@@ -2,6 +2,7 @@ services:
   zookeeper:
     image: confluentinc/cp-zookeeper:7.5.8
     container_name: zookeeper
+    restart: unless-stopped
     environment:
       ZOOKEEPER_CLIENT_PORT: ${ZOOKEEPER_PORT}
       ZOOKEEPER_TICK_TIME: 2000
@@ -11,6 +12,7 @@ services:
   kafka:
     image: confluentinc/cp-kafka:7.5.8
     container_name: kafka
+    restart: unless-stopped
     depends_on:
       - zookeeper
     ports:
@@ -33,6 +35,7 @@ services:
       context: .
       dockerfile: eureka-server/Dockerfile
     container_name: ${EUREKA_SERVER_CONTAINER_NAME}
+    restart: unless-stopped
     networks:
       eshop-network:
         aliases:
@@ -46,6 +49,7 @@ services:
       retries: 5
 
 
+# Databases
   postgres-auth:
     image: postgres:16
     container_name: ${POSTGRES_AUTH_CONTAINER_NAME}
@@ -67,27 +71,6 @@ services:
       eshop-network:
         aliases:
           - ${POSTGRES_AUTH_HOST}
-
-  auth-service:
-    build:
-      context: .
-      dockerfile: auth-service/Dockerfile
-    container_name: auth-service
-    environment:
-      EUREKA_SERVER_URL: "http://${EUREKA_SERVER_HOST}:${EUREKA_SERVER_PORT}/eureka"
-      SPRING_DATASOURCE_URL: "jdbc:postgresql://${POSTGRES_AUTH_HOST}:5432/${POSTGRES_AUTH_DB}"
-      SPRING_DATASOURCE_USERNAME: ${POSTGRES_AUTH_USER}
-      SPRING_DATASOURCE_PASSWORD: ${POSTGRES_AUTH_PASSWORD}
-      SPRING_JPA_HIBERNATE_DDL_AUTO: update
-      APPLICATION_SECURITY_JWT_SECRET_KEY: ${JWT_SECRET_KEY}
-      APPLICATION_SECURITY_JWT_EXPIRATION: ${JWT_EXPIRATION}
-      AUTH_APP_NAME: ${AUTH_APP_NAME}
-    networks:
-      - eshop-network
-    depends_on:
-      postgres-auth:
-        condition: service_healthy
-
 
   postgres-product:
     image: postgres:16
@@ -111,27 +94,6 @@ services:
         aliases:
           - ${POSTGRES_PRODUCT_HOST}
 
-  product-service:
-    build:
-      context: .
-      dockerfile: product-service/Dockerfile
-    container_name: product-service
-    environment:
-      EUREKA_SERVER_URL: "http://${EUREKA_SERVER_HOST}:${EUREKA_SERVER_PORT}/eureka"
-      SPRING_DATASOURCE_URL: "jdbc:postgresql://${POSTGRES_PRODUCT_HOST}:5432/${POSTGRES_PRODUCT_DB}"
-      SPRING_DATASOURCE_USERNAME: ${POSTGRES_PRODUCT_USER}
-      SPRING_DATASOURCE_PASSWORD: ${POSTGRES_PRODUCT_PASSWORD}
-      SPRING_JPA_HIBERNATE_DDL_AUTO: update
-      PRODUCT_APP_NAME: ${PRODUCT_APP_NAME}
-    volumes:
-      - product-images:/app/uploads
-    networks:
-      - eshop-network
-    depends_on:
-      postgres-product:
-        condition: service_healthy
-
-
   postgres-cart:
     image: postgres:16
     container_name: ${POSTGRES_CART_CONTAINER_NAME}
@@ -153,24 +115,6 @@ services:
       eshop-network:
         aliases:
           - ${POSTGRES_CART_HOST}
-
-  cart-service:
-    build:
-      context: .
-      dockerfile: cart-service/Dockerfile
-    container_name: cart-service
-    environment:
-      EUREKA_SERVER_URL: "http://${EUREKA_SERVER_HOST}:${EUREKA_SERVER_PORT}/eureka"
-      SPRING_DATASOURCE_URL: "jdbc:postgresql://${POSTGRES_CART_HOST}:5432/${POSTGRES_CART_DB}"
-      SPRING_DATASOURCE_USERNAME: ${POSTGRES_CART_USER}
-      SPRING_DATASOURCE_PASSWORD: ${POSTGRES_CART_PASSWORD}
-      SPRING_JPA_HIBERNATE_DDL_AUTO: update
-      CART_APP_NAME: ${CART_APP_NAME}
-    networks:
-      - eshop-network
-    depends_on:
-      postgres-cart:
-        condition: service_healthy
 
   postgres-order:
     image: postgres:16
@@ -194,28 +138,6 @@ services:
         aliases:
           - ${POSTGRES_ORDER_HOST}
 
-  order-service:
-    build:
-      context: .
-      dockerfile: order-service/Dockerfile
-    container_name: order-service
-    environment:
-      EUREKA_SERVER_URL: "http://${EUREKA_SERVER_HOST}:${EUREKA_SERVER_PORT}/eureka"
-      SPRING_DATASOURCE_URL: "jdbc:postgresql://${POSTGRES_ORDER_HOST}:5432/${POSTGRES_ORDER_DB}"
-      SPRING_DATASOURCE_USERNAME: ${POSTGRES_ORDER_USER}
-      SPRING_DATASOURCE_PASSWORD: ${POSTGRES_ORDER_PASSWORD}
-      SPRING_JPA_HIBERNATE_DDL_AUTO: update
-      ORDER_APP_NAME: ${ORDER_APP_NAME}
-      KAFKA_HOST: ${KAFKA_HOST}
-      KAFKA_PORT: ${KAFKA_PORT}
-    networks:
-      - eshop-network
-    depends_on:
-      postgres-order:
-        condition: service_healthy
-      kafka:
-        condition: service_healthy
-
   postgres-stock:
     image: postgres:16
     container_name: ${POSTGRES_STOCK_CONTAINER_NAME}
@@ -238,33 +160,13 @@ services:
         aliases:
           - ${POSTGRES_STOCK_HOST}
 
-  stock-service:
-    build:
-      context: .
-      dockerfile: stock-service/Dockerfile
-    container_name: stock-service
-    environment:
-      EUREKA_SERVER_URL: "http://${EUREKA_SERVER_HOST}:${EUREKA_SERVER_PORT}/eureka"
-      SPRING_DATASOURCE_URL: "jdbc:postgresql://${POSTGRES_STOCK_HOST}:5432/${POSTGRES_STOCK_DB}"
-      SPRING_DATASOURCE_USERNAME: ${POSTGRES_STOCK_USER}
-      SPRING_DATASOURCE_PASSWORD: ${POSTGRES_STOCK_PASSWORD}
-      SPRING_JPA_HIBERNATE_DDL_AUTO: update
-      STOCK_APP_NAME: ${STOCK_APP_NAME}
-      KAFKA_HOST: ${KAFKA_HOST}
-      KAFKA_PORT: ${KAFKA_PORT}
-    networks:
-      - eshop-network
-    depends_on:
-      postgres-order:
-        condition: service_healthy
-      kafka:
-        condition: service_healthy
-
+# Services
   api-gateway:
     build:
       context: .
       dockerfile: api-gateway/Dockerfile
     container_name: ${API_GATEWAY_CONTAINER_NAME}
+    restart: unless-stopped
     environment:
       EUREKA_SERVER_URL: "http://${EUREKA_SERVER_HOST}:${EUREKA_SERVER_PORT}/eureka"
       API_GATEWAY_HOST: ${API_GATEWAY_HOST}
@@ -281,11 +183,129 @@ services:
       eureka-server:
         condition: service_healthy
 
+  auth-service:
+    build:
+      context: .
+      dockerfile: auth-service/Dockerfile
+    container_name: auth-service
+    restart: unless-stopped
+    environment:
+      EUREKA_SERVER_URL: "http://${EUREKA_SERVER_HOST}:${EUREKA_SERVER_PORT}/eureka"
+      SPRING_DATASOURCE_URL: "jdbc:postgresql://${POSTGRES_AUTH_HOST}:5432/${POSTGRES_AUTH_DB}"
+      SPRING_DATASOURCE_USERNAME: ${POSTGRES_AUTH_USER}
+      SPRING_DATASOURCE_PASSWORD: ${POSTGRES_AUTH_PASSWORD}
+      SPRING_JPA_HIBERNATE_DDL_AUTO: update
+      APPLICATION_SECURITY_JWT_SECRET_KEY: ${JWT_SECRET_KEY}
+      APPLICATION_SECURITY_JWT_EXPIRATION: ${JWT_EXPIRATION}
+      AUTH_APP_NAME: ${AUTH_APP_NAME}
+    networks:
+      - eshop-network
+    depends_on:
+      postgres-auth:
+        condition: service_healthy
+      eureka-server:
+        condition: service_healthy
+
+  product-service:
+    build:
+      context: .
+      dockerfile: product-service/Dockerfile
+    container_name: product-service
+    restart: unless-stopped
+    environment:
+      EUREKA_SERVER_URL: "http://${EUREKA_SERVER_HOST}:${EUREKA_SERVER_PORT}/eureka"
+      SPRING_DATASOURCE_URL: "jdbc:postgresql://${POSTGRES_PRODUCT_HOST}:5432/${POSTGRES_PRODUCT_DB}"
+      SPRING_DATASOURCE_USERNAME: ${POSTGRES_PRODUCT_USER}
+      SPRING_DATASOURCE_PASSWORD: ${POSTGRES_PRODUCT_PASSWORD}
+      SPRING_JPA_HIBERNATE_DDL_AUTO: update
+      PRODUCT_APP_NAME: ${PRODUCT_APP_NAME}
+    volumes:
+      - product-images:/app/uploads
+    networks:
+      - eshop-network
+    depends_on:
+      postgres-product:
+        condition: service_healthy
+      eureka-server:
+        condition: service_healthy
+
+  cart-service:
+    build:
+      context: .
+      dockerfile: cart-service/Dockerfile
+    container_name: cart-service
+    restart: unless-stopped
+    environment:
+      EUREKA_SERVER_URL: "http://${EUREKA_SERVER_HOST}:${EUREKA_SERVER_PORT}/eureka"
+      SPRING_DATASOURCE_URL: "jdbc:postgresql://${POSTGRES_CART_HOST}:5432/${POSTGRES_CART_DB}"
+      SPRING_DATASOURCE_USERNAME: ${POSTGRES_CART_USER}
+      SPRING_DATASOURCE_PASSWORD: ${POSTGRES_CART_PASSWORD}
+      SPRING_JPA_HIBERNATE_DDL_AUTO: update
+      CART_APP_NAME: ${CART_APP_NAME}
+    networks:
+      - eshop-network
+    depends_on:
+      postgres-cart:
+        condition: service_healthy
+      eureka-server:
+        condition: service_healthy
+
+  order-service:
+    build:
+      context: .
+      dockerfile: order-service/Dockerfile
+    container_name: order-service
+    restart: unless-stopped
+    environment:
+      EUREKA_SERVER_URL: "http://${EUREKA_SERVER_HOST}:${EUREKA_SERVER_PORT}/eureka"
+      SPRING_DATASOURCE_URL: "jdbc:postgresql://${POSTGRES_ORDER_HOST}:5432/${POSTGRES_ORDER_DB}"
+      SPRING_DATASOURCE_USERNAME: ${POSTGRES_ORDER_USER}
+      SPRING_DATASOURCE_PASSWORD: ${POSTGRES_ORDER_PASSWORD}
+      SPRING_JPA_HIBERNATE_DDL_AUTO: update
+      ORDER_APP_NAME: ${ORDER_APP_NAME}
+      KAFKA_HOST: ${KAFKA_HOST}
+      KAFKA_PORT: ${KAFKA_PORT}
+    networks:
+      - eshop-network
+    depends_on:
+      postgres-order:
+        condition: service_healthy
+      eureka-server:
+        condition: service_healthy
+      kafka:
+        condition: service_healthy
+
+  stock-service:
+    build:
+      context: .
+      dockerfile: stock-service/Dockerfile
+    container_name: stock-service
+    restart: unless-stopped
+    environment:
+      EUREKA_SERVER_URL: "http://${EUREKA_SERVER_HOST}:${EUREKA_SERVER_PORT}/eureka"
+      SPRING_DATASOURCE_URL: "jdbc:postgresql://${POSTGRES_STOCK_HOST}:5432/${POSTGRES_STOCK_DB}"
+      SPRING_DATASOURCE_USERNAME: ${POSTGRES_STOCK_USER}
+      SPRING_DATASOURCE_PASSWORD: ${POSTGRES_STOCK_PASSWORD}
+      SPRING_JPA_HIBERNATE_DDL_AUTO: update
+      STOCK_APP_NAME: ${STOCK_APP_NAME}
+      KAFKA_HOST: ${KAFKA_HOST}
+      KAFKA_PORT: ${KAFKA_PORT}
+    networks:
+      - eshop-network
+    depends_on:
+      postgres-stock:
+        condition: service_healthy
+      eureka-server:
+        condition: service_healthy
+      kafka:
+        condition: service_healthy
+
   notification-service:
     build:
       context: .
       dockerfile: notification-service/Dockerfile
     container_name: ${NOTIFICATION_SERVICE_CONTAINER_NAME}
+    restart: unless-stopped
     environment:
       NOTIFICATION_SERVICE_APP_NAME: ${NOTIFICATION_SERVICE_APP_NAME}
       KAFKA_SERVER: ${KAFKA_HOST}:${KAFKA_PORT}
@@ -297,10 +317,13 @@ services:
     networks:
       - eshop-network
     depends_on:
+      eureka-server:
+        condition: service_healthy
       kafka:
         condition: service_healthy
 
 
+# Monitoring
   prometheus:
     image: prom/prometheus:v2.53.5
     container_name: prometheus
