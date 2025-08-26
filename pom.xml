@@ -28,6 +28,7 @@
         <module>product-service</module>
         <module>stock-service</module>
         <module>notification-service</module>
+        <module>logging-starter</module>
     </modules>
 
     <dependencyManagement>

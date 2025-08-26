@@ -46,7 +46,7 @@ services:
       test: ["CMD-SHELL", "curl -f http://localhost:${EUREKA_SERVER_PORT}/actuator/health || exit 1"]
       interval: 10s
       timeout: 5s
-      retries: 5
+      retries: 10
 
 
 # Databases
@@ -66,7 +66,7 @@ services:
       test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_AUTH_USER} -d ${POSTGRES_AUTH_DB}"]
       interval: 10s
       timeout: 5s
-      retries: 5
+      retries: 10
     networks:
       eshop-network:
         aliases:
@@ -88,7 +88,7 @@ services:
       test: [ "CMD-SHELL", "pg_isready -U ${POSTGRES_PRODUCT_USER} -d ${POSTGRES_PRODUCT_DB}" ]
       interval: 10s
       timeout: 5s
-      retries: 5
+      retries: 10
     networks:
       eshop-network:
         aliases:
@@ -110,7 +110,7 @@ services:
       test: [ "CMD-SHELL", "pg_isready -U ${POSTGRES_CART_USER} -d ${POSTGRES_CART_DB}" ]
       interval: 10s
       timeout: 5s
-      retries: 5
+      retries: 10
     networks:
       eshop-network:
         aliases:
@@ -132,7 +132,7 @@ services:
       test: [ "CMD-SHELL", "pg_isready -U ${POSTGRES_ORDER_USER} -d ${POSTGRES_ORDER_DB}" ]
       interval: 10s
       timeout: 5s
-      retries: 5
+      retries: 10
     networks:
       eshop-network:
         aliases:
@@ -154,7 +154,7 @@ services:
       test: [ "CMD-SHELL", "pg_isready -U ${POSTGRES_STOCK_USER} -d ${POSTGRES_STOCK_DB}" ]
       interval: 10s
       timeout: 5s
-      retries: 5
+      retries: 10
     networks:
       eshop-network:
         aliases:
@@ -395,6 +395,49 @@ services:
     networks:
       - eshop-network
 
+# Logging
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.14.3
+    container_name: elasticsearch
+    environment:
+      - discovery.type=single-node
+      - ES_JAVA_OPTS=-Xms1g -Xmx1g
+      - xpack.security.enabled=false
+    ports:
+      - "9200:9200"
+    volumes:
+      - es_data:/usr/share/elasticsearch/data
+    networks:
+      - eshop-network
+
+  kibana:
+    image: docker.elastic.co/kibana/kibana:8.14.3
+    container_name: kibana
+    environment:
+      ELASTICSEARCH_URL: http://elasticsearch:9200
+      ELASTICSEARCH_HOSTS: '["http://elasticsearch:9200"]'
+    ports:
+      - "5601:5601"
+    depends_on:
+      - elasticsearch
+    networks:
+      - eshop-network
+
+  logstash:
+    image: docker.elastic.co/logstash/logstash:8.14.3
+    container_name: logstash
+    ports:
+      - "5044:5044"
+      - "5000:5000/tcp"
+      - "5000:5000/udp"
+      - "9600:9600"
+    volumes:
+      - ./logstash/config/logstash.yml:/usr/share/logstash/config/logstash.yml:ro
+      - ./logstash/pipeline:/usr/share/logstash/pipeline:ro
+    depends_on:
+      - elasticsearch
+    networks:
+      - eshop-network
 
 
 volumes:
@@ -404,6 +447,7 @@ volumes:
   postgres-order-data: {}
   postgres-stock-data: {}
   product-images: {}
+  es_data: {}
 
 networks:
   eshop-network:
