@@ -127,6 +127,13 @@ spring:
                   - ROLE_USER
                   - ROLE_ADMIN
 
+        - id: docs-stock
+          uri: lb://${STOCK_APP_NAME}
+          predicates:
+            - Path=/${STOCK_APP_NAME}/v3/api-docs
+          filters:
+            - StripPrefix=1
+
 
 springdoc:
   swagger-ui:
@@ -142,6 +149,9 @@ springdoc:
 
       - name: ${ORDER_APP_NAME}
         url: /${ORDER_APP_NAME}/v3/api-docs
+
+      - name: ${STOCK_APP_NAME}
+        url: /${STOCK_APP_NAME}/v3/api-docs
 
 
     path: /swagger-ui.html
