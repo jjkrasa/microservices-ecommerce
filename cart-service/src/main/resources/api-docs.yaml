@@ -1,0 +1,270 @@
+openapi: 3.1.0
+info:
+  title: OpenAPI definition
+  version: v0
+servers:
+  - url: http://bf864d27e97d:8080
+    description: Generated server url
+paths:
+  "/api/carts":
+    get:
+      tags:
+        - cart-controller
+      operationId: getCart
+      parameters:
+        - name: X-User-Id
+          in: header
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '200':
+          description: OK
+          content:
+            "*/*":
+              schema:
+                "$ref": "#/components/schemas/CartResponse"
+    post:
+      tags:
+        - cart-controller
+      operationId: addItemToCart
+      parameters:
+        - name: X-User-Id
+          in: header
+          required: true
+          schema:
+            type: integer
+            format: int64
+      requestBody:
+        content:
+          application/json:
+            schema:
+              "$ref": "#/components/schemas/AddCartItemRequest"
+        required: true
+      responses:
+        '200':
+          description: OK
+    delete:
+      tags:
+        - cart-controller
+      operationId: clearCart
+      parameters:
+        - name: X-User-Id
+          in: header
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '200':
+          description: OK
+  "/api/carts/anonymous":
+    get:
+      tags:
+        - cart-controller
+      operationId: getAnonymousCart
+      parameters:
+        - name: sessionId
+          in: cookie
+          required: false
+          schema:
+            type: string
+      responses:
+        '200':
+          description: OK
+          content:
+            "*/*":
+              schema:
+                "$ref": "#/components/schemas/CartResponse"
+    post:
+      tags:
+        - cart-controller
+      operationId: addItemToAnonymousCart
+      parameters:
+        - name: sessionId
+          in: cookie
+          required: false
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              "$ref": "#/components/schemas/AddCartItemRequest"
+        required: true
+      responses:
+        '200':
+          description: OK
+    delete:
+      tags:
+        - cart-controller
+      operationId: clearAnonymousCart
+      parameters:
+        - name: sessionId
+          in: cookie
+          required: false
+          schema:
+            type: string
+      responses:
+        '200':
+          description: OK
+  "/api/carts/items/{cartItemId}":
+    delete:
+      tags:
+        - cart-controller
+      operationId: deleteCartItem
+      parameters:
+        - name: X-User-Id
+          in: header
+          required: true
+          schema:
+            type: integer
+            format: int64
+        - name: cartItemId
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '200':
+          description: OK
+    patch:
+      tags:
+        - cart-controller
+      operationId: updateCartItemQuantity
+      parameters:
+        - name: X-User-Id
+          in: header
+          required: true
+          schema:
+            type: integer
+            format: int64
+        - name: cartItemId
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+      requestBody:
+        content:
+          application/json:
+            schema:
+              "$ref": "#/components/schemas/UpdateCartItemRequest"
+        required: true
+      responses:
+        '200':
+          description: OK
+  "/api/carts/anonymous/items/{cartItemId}":
+    delete:
+      tags:
+        - cart-controller
+      operationId: deleteAnonymousCartItem
+      parameters:
+        - name: sessionId
+          in: cookie
+          required: false
+          schema:
+            type: string
+        - name: cartItemId
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '200':
+          description: OK
+    patch:
+      tags:
+        - cart-controller
+      operationId: updateAnonymousCartItemQuantity
+      parameters:
+        - name: sessionId
+          in: cookie
+          required: false
+          schema:
+            type: string
+        - name: cartItemId
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+      requestBody:
+        content:
+          application/json:
+            schema:
+              "$ref": "#/components/schemas/UpdateCartItemRequest"
+        required: true
+      responses:
+        '200':
+          description: OK
+components:
+  schemas:
+    AddCartItemRequest:
+      type: object
+      properties:
+        productId:
+          type: integer
+          format: int64
+        quantity:
+          type: integer
+          format: int32
+          minimum: 1
+      required:
+        - productId
+        - quantity
+    UpdateCartItemRequest:
+      type: object
+      properties:
+        quantity:
+          type: integer
+          format: int32
+          minimum: 0
+      required:
+        - quantity
+    CartItemResponse:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        product:
+          "$ref": "#/components/schemas/ProductResponse"
+        quantity:
+          type: integer
+          format: int32
+    CartResponse:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        userId:
+          type: integer
+          format: int64
+        items:
+          type: array
+          items:
+            "$ref": "#/components/schemas/CartItemResponse"
+    ProductResponse:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        name:
+          type: string
+        category:
+          type: string
+        description:
+          type: string
+        price:
+          type: number
+        availableQuantity:
+          type: integer
+          format: int32
+        imageUrl:
+          type: string

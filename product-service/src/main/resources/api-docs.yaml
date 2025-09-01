@@ -1,0 +1,354 @@
+openapi: 3.1.0
+info:
+  title: OpenAPI definition
+  version: v0
+servers:
+  - url: http://0dd4b1e8168b:8080
+    description: Generated server url
+paths:
+  "/api/products/admin/{productId}":
+    put:
+      tags:
+        - product-controller
+      operationId: updateProduct
+      parameters:
+        - name: productId
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+      requestBody:
+        content:
+          application/json:
+            schema:
+              "$ref": "#/components/schemas/UpdateProductRequest"
+        required: true
+      responses:
+        '200':
+          description: OK
+    delete:
+      tags:
+        - product-controller
+      operationId: deleteProductById
+      parameters:
+        - name: productId
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '200':
+          description: OK
+  "/api/products/admin":
+    post:
+      tags:
+        - product-controller
+      operationId: createProduct
+      requestBody:
+        content:
+          application/json:
+            schema:
+              "$ref": "#/components/schemas/CreateProductRequest"
+        required: true
+      responses:
+        '200':
+          description: OK
+          content:
+            "*/*":
+              schema:
+                "$ref": "#/components/schemas/ProductResponse"
+  "/api/products/admin/images":
+    post:
+      tags:
+        - product-controller
+      operationId: uploadImage
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                file:
+                  type: string
+                  format: binary
+              required:
+                - file
+      responses:
+        '200':
+          description: OK
+          content:
+            "*/*":
+              schema:
+                type: string
+  "/api/categories/admin":
+    post:
+      tags:
+        - category-controller
+      operationId: createCategory
+      requestBody:
+        content:
+          application/json:
+            schema:
+              "$ref": "#/components/schemas/CreateCategoryRequest"
+        required: true
+      responses:
+        '200':
+          description: OK
+          content:
+            "*/*":
+              schema:
+                "$ref": "#/components/schemas/CategoryResponse"
+  "/api/products/admin/{productId}/images":
+    patch:
+      tags:
+        - product-controller
+      operationId: updateProductImage
+      parameters:
+        - name: productId
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                file:
+                  type: string
+                  format: binary
+              required:
+                - file
+      responses:
+        '200':
+          description: OK
+          content:
+            "*/*":
+              schema:
+                type: string
+  "/api/products":
+    get:
+      tags:
+        - product-controller
+      operationId: getProducts
+      parameters:
+        - name: filterRequest
+          in: query
+          required: true
+          schema:
+            "$ref": "#/components/schemas/ProductFilterRequest"
+      responses:
+        '200':
+          description: OK
+          content:
+            "*/*":
+              schema:
+                "$ref": "#/components/schemas/PagedResponseProductResponse"
+  "/api/products/{productId}":
+    get:
+      tags:
+        - product-controller
+      operationId: getProductById
+      parameters:
+        - name: productId
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '200':
+          description: OK
+          content:
+            "*/*":
+              schema:
+                "$ref": "#/components/schemas/ProductResponse"
+  "/api/products/batch":
+    get:
+      tags:
+        - product-controller
+      operationId: getProductsByIds
+      parameters:
+        - name: ids
+          in: query
+          required: true
+          schema:
+            type: array
+            items:
+              type: integer
+              format: int64
+      responses:
+        '200':
+          description: OK
+          content:
+            "*/*":
+              schema:
+                type: array
+                items:
+                  "$ref": "#/components/schemas/ProductResponse"
+  "/api/categories":
+    get:
+      tags:
+        - category-controller
+      operationId: getCategories
+      responses:
+        '200':
+          description: OK
+          content:
+            "*/*":
+              schema:
+                type: array
+                items:
+                  "$ref": "#/components/schemas/CategoryResponse"
+  "/api/categories/admin/{categoryId}":
+    delete:
+      tags:
+        - category-controller
+      operationId: deleteCategoryById
+      parameters:
+        - name: categoryId
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '200':
+          description: OK
+components:
+  schemas:
+    UpdateProductRequest:
+      type: object
+      properties:
+        name:
+          type: string
+          minLength: 1
+        categoryId:
+          type: integer
+          format: int64
+        description:
+          type: string
+        price:
+          type: number
+          minimum: 0
+        imageUrl:
+          type: string
+      required:
+        - categoryId
+        - name
+        - price
+    CreateProductRequest:
+      type: object
+      properties:
+        name:
+          type: string
+          minLength: 1
+        categoryId:
+          type: integer
+          format: int64
+        description:
+          type: string
+        price:
+          type: number
+          minimum: 0
+        availableQuantity:
+          type: integer
+          format: int32
+          minimum: 0
+        imageUrl:
+          type: string
+      required:
+        - availableQuantity
+        - categoryId
+        - name
+        - price
+    ProductResponse:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        name:
+          type: string
+        category:
+          type: string
+        description:
+          type: string
+        price:
+          type: number
+        availableQuantity:
+          type: integer
+          format: int32
+        imageUrl:
+          type: string
+    CreateCategoryRequest:
+      type: object
+      properties:
+        name:
+          type: string
+          minLength: 1
+      required:
+        - name
+    CategoryResponse:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        name:
+          type: string
+    ProductFilterRequest:
+      type: object
+      properties:
+        pageNumber:
+          type: integer
+          format: int32
+        pageSize:
+          type: integer
+          format: int32
+        categoryIds:
+          type: array
+          items:
+            type: integer
+            format: int64
+        minPrice:
+          type: number
+          minimum: 0
+        maxPrice:
+          type: number
+          minimum: 0
+        keyWord:
+          type: string
+        sortBy:
+          type: string
+        sortDirection:
+          type: string
+        priceValid:
+          type: boolean
+    PagedResponseProductResponse:
+      type: object
+      properties:
+        content:
+          type: array
+          items:
+            "$ref": "#/components/schemas/ProductResponse"
+        pageNumber:
+          type: integer
+          format: int32
+        pageSize:
+          type: integer
+          format: int32
+        totalElements:
+          type: integer
+          format: int64
+        totalPages:
+          type: integer
+          format: int32
+        hasPreviousPage:
+          type: boolean
+        hasNextPage:
+          type: boolean

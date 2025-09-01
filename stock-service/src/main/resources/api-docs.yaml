@@ -1,0 +1,154 @@
+openapi: 3.1.0
+info:
+  title: OpenAPI definition
+  version: v0
+servers:
+  - url: http://9415683931f7:8080
+    description: Generated server url
+paths:
+  "/api/stocks/{productId}":
+    get:
+      tags:
+        - stock-controller
+      operationId: getStockByProductId
+      parameters:
+        - name: productId
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '200':
+          description: OK
+          content:
+            "*/*":
+              schema:
+                "$ref": "#/components/schemas/StockResponse"
+    post:
+      tags:
+        - stock-controller
+      operationId: createStock
+      parameters:
+        - name: productId
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+      requestBody:
+        content:
+          application/json:
+            schema:
+              "$ref": "#/components/schemas/CreateStockRequest"
+        required: true
+      responses:
+        '200':
+          description: OK
+          content:
+            "*/*":
+              schema:
+                "$ref": "#/components/schemas/StockResponse"
+    patch:
+      tags:
+        - stock-controller
+      operationId: updateStockQuantity
+      parameters:
+        - name: productId
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+      requestBody:
+        content:
+          application/json:
+            schema:
+              "$ref": "#/components/schemas/UpdateStockRequest"
+        required: true
+      responses:
+        '200':
+          description: OK
+  "/api/stocks/{productId}/reserve":
+    patch:
+      tags:
+        - stock-controller
+      operationId: reserveStockByProductId
+      parameters:
+        - name: productId
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+      requestBody:
+        content:
+          application/json:
+            schema:
+              "$ref": "#/components/schemas/ReserveStockRequest"
+        required: true
+      responses:
+        '200':
+          description: OK
+  "/api/stocks/batch":
+    get:
+      tags:
+        - stock-controller
+      operationId: getStocksByProductIds
+      parameters:
+        - name: productIds
+          in: query
+          required: true
+          schema:
+            type: array
+            items:
+              type: integer
+              format: int64
+      responses:
+        '200':
+          description: OK
+          content:
+            "*/*":
+              schema:
+                type: array
+                items:
+                  "$ref": "#/components/schemas/StockResponse"
+components:
+  schemas:
+    CreateStockRequest:
+      type: object
+      properties:
+        availableQuantity:
+          type: integer
+          format: int32
+          minimum: 0
+      required:
+        - availableQuantity
+    StockResponse:
+      type: object
+      properties:
+        productId:
+          type: integer
+          format: int64
+        availableQuantity:
+          type: integer
+          format: int32
+    UpdateStockRequest:
+      type: object
+      properties:
+        quantityChange:
+          type: integer
+          format: int32
+          maximum: 100
+          minimum: -100
+      required:
+        - quantityChange
+    ReserveStockRequest:
+      type: object
+      properties:
+        quantity:
+          type: integer
+          format: int32
+          minimum: 1
+      required:
+        - quantity

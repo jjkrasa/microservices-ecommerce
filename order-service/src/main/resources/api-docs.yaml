@@ -1,0 +1,202 @@
+openapi: 3.1.0
+info:
+  title: OpenAPI definition
+  version: v0
+servers:
+  - url: http://8e4a0e98a582:8080
+    description: Generated server url
+paths:
+  "/api/orders":
+    get:
+      tags:
+        - order-controller
+      operationId: getUsersOrders
+      parameters:
+        - name: X-User-Id
+          in: header
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '200':
+          description: OK
+          content:
+            "*/*":
+              schema:
+                type: array
+                items:
+                  "$ref": "#/components/schemas/OrderResponse"
+    post:
+      tags:
+        - order-controller
+      operationId: createOrder
+      parameters:
+        - name: X-User-Id
+          in: header
+          required: true
+          schema:
+            type: integer
+            format: int64
+      requestBody:
+        content:
+          application/json:
+            schema:
+              "$ref": "#/components/schemas/CreateOrderRequest"
+        required: true
+      responses:
+        '200':
+          description: OK
+          content:
+            "*/*":
+              schema:
+                "$ref": "#/components/schemas/OrderResponse"
+  "/api/orders/anonymous":
+    post:
+      tags:
+        - order-controller
+      operationId: createAnonymousOrder
+      parameters:
+        - name: sessionId
+          in: cookie
+          required: false
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              "$ref": "#/components/schemas/CreateOrderRequest"
+        required: true
+      responses:
+        '200':
+          description: OK
+          content:
+            "*/*":
+              schema:
+                "$ref": "#/components/schemas/OrderResponse"
+  "/api/orders/{orderId}/cancel":
+    patch:
+      tags:
+        - order-controller
+      operationId: cancelOrder
+      parameters:
+        - name: X-User-Id
+          in: header
+          required: true
+          schema:
+            type: integer
+            format: int64
+        - name: orderId
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '200':
+          description: OK
+  "/api/orders/{orderId}":
+    get:
+      tags:
+        - order-controller
+      operationId: getOrderById
+      parameters:
+        - name: X-User-Id
+          in: header
+          required: true
+          schema:
+            type: integer
+            format: int64
+        - name: orderId
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '200':
+          description: OK
+          content:
+            "*/*":
+              schema:
+                "$ref": "#/components/schemas/OrderResponse"
+components:
+  schemas:
+    CreateOrderRequest:
+      type: object
+      properties:
+        email:
+          type: string
+          minLength: 1
+        firstName:
+          type: string
+          minLength: 1
+          pattern: "^[\\p{L}]+(?:[\\s\\p{L}-]+)*$"
+        lastName:
+          type: string
+          minLength: 1
+          pattern: "^[\\p{L}]+(?:[\\s\\p{L}-]+)*$"
+        phoneNumber:
+          type: string
+          minLength: 1
+          pattern: "^\\+?[0-9]{1,4}[\\s.-]?[0-9]{3,}[\\s.-]?[0-9]{3,}[\\s.-]?[0-9]{0,4}$"
+        street:
+          type: string
+          minLength: 1
+          pattern: "^[\\p{L}0-9 .,'-]+$"
+        houseNumber:
+          type: string
+          minLength: 1
+          pattern: "^[\\p{L}0-9/\\-]+$"
+        city:
+          type: string
+          minLength: 1
+        zipCode:
+          type: string
+          minLength: 1
+          pattern: "^[0-9A-Za-z\\-\\s]{3,10}$"
+        country:
+          type: string
+          minLength: 1
+          pattern: "^[\\p{L} .'-]+$"
+      required:
+        - city
+        - country
+        - email
+        - firstName
+        - houseNumber
+        - lastName
+        - phoneNumber
+        - street
+        - zipCode
+    OrderItemResponse:
+      type: object
+      properties:
+        productId:
+          type: integer
+          format: int64
+        name:
+          type: string
+        price:
+          type: number
+        quantity:
+          type: integer
+          format: int32
+    OrderResponse:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        totalAmount:
+          type: number
+        status:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+        items:
+          type: array
+          items:
+            "$ref": "#/components/schemas/OrderItemResponse"
