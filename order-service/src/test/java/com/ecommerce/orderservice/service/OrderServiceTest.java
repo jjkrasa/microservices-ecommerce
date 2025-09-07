@@ -16,6 +16,8 @@ import com.ecommerce.orderservice.model.Order;
 import com.ecommerce.orderservice.model.OrderStatus;
 import com.ecommerce.orderservice.repository.OrderRepository;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
@@ -130,193 +132,217 @@ class OrderServiceTest {
                 .build();
     }
 
-    @Test
-    public void createOrder_shouldCreateOrderForUser() {
+    @Nested
+    @DisplayName("createOrder() tests")
+    class CreateOrder {
+        @Test
+        public void createOrder_shouldCreateOrderForUser() {
 
-        when(cartClient.getCart(1L)).thenReturn(cartWithOneItem);
+            when(cartClient.getCart(1L)).thenReturn(cartWithOneItem);
 
-        when(orderRepository.save(any(Order.class))).then(inv -> {
-            Order order = inv.getArgument(0);
-            order.setId(1L);
+            when(orderRepository.save(any(Order.class))).then(inv -> {
+                Order order = inv.getArgument(0);
+                order.setId(1L);
 
-            return order;
-        });
+                return order;
+            });
 
-        OrderCreatedEvent orderCreatedEvent = new OrderCreatedEvent();
-        when(orderEventMapper.ordertToOrderCreatedEvent(any(Order.class))).thenReturn(orderCreatedEvent);
+            OrderCreatedEvent orderCreatedEvent = new OrderCreatedEvent();
+            when(orderEventMapper.ordertToOrderCreatedEvent(any(Order.class))).thenReturn(orderCreatedEvent);
 
-        OrderResponse expectedResponse = OrderResponse.builder()
-                .id(1L)
-                .totalAmount(BigDecimal.valueOf(199.98))
-                .status(OrderStatus.CREATED.name())
-                .createdAt(LocalDateTime.now())
-                .items(Collections.emptyList())
-                .build();
+            OrderResponse expectedResponse = OrderResponse.builder()
+                    .id(1L)
+                    .totalAmount(BigDecimal.valueOf(199.98))
+                    .status(OrderStatus.CREATED.name())
+                    .createdAt(LocalDateTime.now())
+                    .items(Collections.emptyList())
+                    .build();
 
-        when(orderMapper.orderToOrderResponse(any(Order.class))).thenReturn(expectedResponse);
+            when(orderMapper.orderToOrderResponse(any(Order.class))).thenReturn(expectedResponse);
 
-        OrderResponse result = orderService.createOrder(1L, null, createOrderRequest);
+            OrderResponse result = orderService.createOrder(1L, null, createOrderRequest);
 
-        assertEquals(expectedResponse, result);
-        verify(orderRepository, times(1)).save(any(Order.class));
-        verify(orderEventPublisher).publishOrderCreatedEvent(orderCreatedEvent);
-        verify(stockEventPublisher).publish(any(StockReserveRequestedEvent.class));
-        verify(cartClient).clearCart(1L);
+            assertEquals(expectedResponse, result);
+            verify(orderRepository, times(1)).save(any(Order.class));
+            verify(orderEventPublisher, times(1)).publishOrderCreatedEvent(orderCreatedEvent);
+            verify(stockEventPublisher, times(1)).publish(any(StockReserveRequestedEvent.class));
+            verify(cartClient, times(1)).clearCart(1L);
+        }
+
+        @Test
+        public void createOrder_shouldCreateOrderForAnonymous() {
+
+            when(cartClient.getAnonymousCart("session")).thenReturn(cartWithOneItem);
+
+            when(orderRepository.save(any(Order.class))).then(inv -> {
+                Order order =  inv.getArgument(0);
+                order.setId(1L);
+
+                return order;
+            });
+
+            OrderCreatedEvent orderCreatedEvent = new OrderCreatedEvent();
+            when(orderEventMapper.ordertToOrderCreatedEvent(any(Order.class))).thenReturn(orderCreatedEvent);
+
+            OrderResponse expectedResponse = OrderResponse.builder()
+                    .id(1L)
+                    .totalAmount(BigDecimal.valueOf(199.98))
+                    .status(OrderStatus.CREATED.name())
+                    .createdAt(LocalDateTime.now())
+                    .items(Collections.emptyList())
+                    .build();
+
+            when(orderMapper.orderToOrderResponse(any(Order.class))).thenReturn(expectedResponse);
+
+            OrderResponse result = orderService.createOrder(null, "session", createOrderRequest);
+
+            assertEquals(expectedResponse, result);
+            verify(orderRepository, times(1)).save(any(Order.class));
+            verify(orderEventPublisher).publishOrderCreatedEvent(orderCreatedEvent);
+            verify(stockEventPublisher).publish(any(StockReserveRequestedEvent.class));
+            verify(cartClient).clearAnonymousCart("session");
+        }
+
+        @Test
+        public void createOrder_shouldThrowBadRequestWhenCartIsEmpty() {
+            cartWithOneItem.getItems().clear();
+
+            when(cartClient.getAnonymousCart("session")).thenReturn(cartWithOneItem);
+
+            BadRequestException ex = assertThrows(BadRequestException.class, () -> orderService.createOrder(null, "session", createOrderRequest));
+            assertEquals(ErrorCode.CART_IS_EMPTY.getMessage(), ex.getMessage());
+        }
+
+        @Test
+        public void createOrder_shouldThrowBadRequestWhenProductIsNotAvailable() {
+            cartWithOneItem.getItems().getFirst().setQuantity(100);
+
+            when(cartClient.getAnonymousCart("session")).thenReturn(cartWithOneItem);
+
+            BadRequestException ex = assertThrows(BadRequestException.class, () -> orderService.createOrder(null, "session", createOrderRequest));
+            assertEquals(ErrorCode.INSUFFICIENT_STOCK.getMessage(), ex.getMessage());
+        }
     }
 
-    @Test
-    public void createOrder_shouldCreateOrderForAnonymous() {
+    @Nested
+    @DisplayName("getUsersOrders() tests")
+    class GetUsersOrders {
+        @Test
+        public void getUsersOrders_shouldReturnUsersOrders() {
+            Order order2 = Order.builder()
+                    .id(2L)
+                    .userId(1L)
+                    .email("john.doe@example.com")
+                    .firstName("John")
+                    .lastName("Doe")
+                    .phoneNumber("+420777777777")
+                    .street("Main Street")
+                    .houseNumber("12A")
+                    .city("Prague")
+                    .zipCode("11000")
+                    .country("Czech Republic")
+                    .orderStatus(OrderStatus.SHIPPED)
+                    .totalAmount(BigDecimal.valueOf(10))
+                    .createdAt(LocalDateTime.now())
+                    .updatedAt(LocalDateTime.now())
+                    .items(Collections.emptyList())
+                    .build();
 
-        when(cartClient.getAnonymousCart("session")).thenReturn(cartWithOneItem);
+            OrderResponse orderResponse2 = OrderResponse.builder()
+                    .id(2L)
+                    .totalAmount(BigDecimal.valueOf(10))
+                    .status(OrderStatus.SHIPPED.name())
+                    .items(Collections.emptyList())
+                    .build();
 
-        when(orderRepository.save(any(Order.class))).then(inv -> {
-            Order order =  inv.getArgument(0);
-            order.setId(1L);
+            List<Order> orders = List.of(order, order2);
+            List<OrderResponse> ordersResponse = List.of(orderResponse, orderResponse2);
 
-            return order;
-        });
+            when(orderRepository.findAllByUserId(1L)).thenReturn(orders);
 
-        OrderCreatedEvent orderCreatedEvent = new OrderCreatedEvent();
-        when(orderEventMapper.ordertToOrderCreatedEvent(any(Order.class))).thenReturn(orderCreatedEvent);
+            when(orderMapper.orderToOrderResponse(order)).thenReturn(orderResponse);
+            when(orderMapper.orderToOrderResponse(order2)).thenReturn(orderResponse2);
 
-        OrderResponse expectedResponse = OrderResponse.builder()
-                .id(1L)
-                .totalAmount(BigDecimal.valueOf(199.98))
-                .status(OrderStatus.CREATED.name())
-                .createdAt(LocalDateTime.now())
-                .items(Collections.emptyList())
-                .build();
+            List<OrderResponse> result = orderService.getUsersOrders(1L);
 
-        when(orderMapper.orderToOrderResponse(any(Order.class))).thenReturn(expectedResponse);
-
-        OrderResponse result = orderService.createOrder(null, "session", createOrderRequest);
-
-        assertEquals(expectedResponse, result);
-        verify(orderRepository, times(1)).save(any(Order.class));
-        verify(orderEventPublisher).publishOrderCreatedEvent(orderCreatedEvent);
-        verify(stockEventPublisher).publish(any(StockReserveRequestedEvent.class));
-        verify(cartClient).clearAnonymousCart("session");
+            assertIterableEquals(ordersResponse, result);
+            verify(orderRepository, times(1)).findAllByUserId(1L);
+            verify(orderMapper, times(1)).orderToOrderResponse(order);
+            verify(orderMapper, times(1)).orderToOrderResponse(order2);
+        }
     }
 
-    @Test
-    public void createOrder_shouldThrowBadRequestWhenCartIsEmpty() {
-        cartWithOneItem.getItems().clear();
+    @Nested
+    @DisplayName("getOrderById() tests")
+    class GetOrderById {
+        @Test
+        public void getOrderById_shouldThrowNotFound() {
+            when(orderRepository.findByIdAndUserId(1L, 1L)).thenReturn(Optional.empty());
 
-        when(cartClient.getAnonymousCart("session")).thenReturn(cartWithOneItem);
+            assertThrows(NotFoundException.class, () -> orderService.getOrderById(1L, 1L));
+        }
 
-        BadRequestException ex = assertThrows(BadRequestException.class, () -> orderService.createOrder(null, "session", createOrderRequest));
-        assertEquals(ErrorCode.CART_IS_EMPTY.getMessage(), ex.getMessage());
+        @Test
+        public void getOrderById_shouldReturnOrder() {
+            when(orderRepository.findByIdAndUserId(1L, 1L)).thenReturn(Optional.of(order));
+            when(orderMapper.orderToOrderResponse(order)).thenReturn(orderResponse);
+
+            OrderResponse result = orderService.getOrderById(1L, 1L);
+
+            assertEquals(orderResponse, result);
+            verify(orderRepository, times(1)).findByIdAndUserId(1L, 1L);
+            verify(orderMapper, times(1)).orderToOrderResponse(order);
+        }
     }
 
-    @Test
-    public void createOrder_shouldThrowBadRequestWhenProductIsNotAvailable() {
-        cartWithOneItem.getItems().getFirst().setQuantity(100);
+    @Nested
+    @DisplayName("cancelOrder() tests")
+    class CancelOrder {
+        @Test
+        public void cancelOrder_shouldThrowBadRequest() {
+            order.setOrderStatus(OrderStatus.SHIPPED);
 
-        when(cartClient.getAnonymousCart("session")).thenReturn(cartWithOneItem);
+            when(orderRepository.findByIdAndUserId(1L, 1L)).thenReturn(Optional.of(order));
 
-        BadRequestException ex = assertThrows(BadRequestException.class, () -> orderService.createOrder(null, "session", createOrderRequest));
-        assertEquals(ErrorCode.INSUFFICIENT_STOCK.getMessage(), ex.getMessage());
-    }
+            assertThrows(BadRequestException.class, () -> orderService.cancelOrder(1L, 1L));
+            verify(orderRepository, times(1)).findByIdAndUserId(1L, 1L);
+        }
 
-    @Test
-    public void getUsersOrders_shouldReturnUsersOrders() {
-        Order order2 = Order.builder()
-                .id(2L)
-                .userId(1L)
-                .email("john.doe@example.com")
-                .firstName("John")
-                .lastName("Doe")
-                .phoneNumber("+420777777777")
-                .street("Main Street")
-                .houseNumber("12A")
-                .city("Prague")
-                .zipCode("11000")
-                .country("Czech Republic")
-                .orderStatus(OrderStatus.SHIPPED)
-                .totalAmount(BigDecimal.valueOf(10))
-                .createdAt(LocalDateTime.now())
-                .updatedAt(LocalDateTime.now())
-                .items(Collections.emptyList())
-                .build();
+        @Test
+        public void cancelOrder_shouldCancelOrder() {
+            when(orderRepository.findByIdAndUserId(1L, 1L)).thenReturn(Optional.of(order));
 
-        OrderResponse orderResponse2 = OrderResponse.builder()
-                .id(2L)
-                .totalAmount(BigDecimal.valueOf(10))
-                .status(OrderStatus.SHIPPED.name())
-                .items(Collections.emptyList())
-                .build();
+            when(orderRepository.save(any(Order.class))).thenAnswer(inv -> inv.getArgument(0));
 
-        List<Order> orders = List.of(order, order2);
-        List<OrderResponse> ordersResponse = List.of(orderResponse, orderResponse2);
+            orderService.cancelOrder(1L, 1L);
 
-        when(orderRepository.findAllByUserId(1L)).thenReturn(orders);
+            ArgumentCaptor<Order> orderArgumentCaptor = ArgumentCaptor.forClass(Order.class);
+            verify(orderRepository, times(1)).findByIdAndUserId(1L, 1L);
+            verify(orderRepository, times(1)).save(orderArgumentCaptor.capture());
+            assertEquals(OrderStatus.CANCELLED, orderArgumentCaptor.getValue().getOrderStatus());
+        }
 
-        when(orderMapper.orderToOrderResponse(order)).thenReturn(orderResponse);
-        when(orderMapper.orderToOrderResponse(order2)).thenReturn(orderResponse2);
+        @Test
+        public void cancelOrder_shouldCancelOrderAndPublishEvent() {
+            when(orderRepository.findById(1L)).thenReturn(Optional.of(order));
 
-        List<OrderResponse> result = orderService.getUsersOrders(1L);
+            orderService.cancelOrder(1L, ErrorCode.INSUFFICIENT_STOCK.getMessage());
 
-        assertIterableEquals(ordersResponse, result);
-        verify(orderMapper.orderToOrderResponse(order));
-        verify(orderMapper.orderToOrderResponse(order2));
-    }
+            assertEquals(OrderStatus.CANCELLED, order.getOrderStatus());
+            verify(orderRepository, times(1)).findById(1L);
+            verify(orderRepository, times(1)).save(any(Order.class));
+            verify(orderEventPublisher, times(1)).publishOrderCancelledEvent(any(OrderCancelledEvent.class));
+        }
 
-    @Test
-    public void getOrderById_shouldThrowNotFound() {
-        when(orderRepository.findByIdAndUserId(1L, 1L)).thenReturn(Optional.empty());
+        @Test
+        public void cancelOrder_shouldNotCancelOrderAndShouldNotPublishEvent() {
+            when(orderRepository.findById(1L)).thenReturn(Optional.empty());
 
-        assertThrows(NotFoundException.class, () -> orderService.getOrderById(1L, 1L));
-    }
+            orderService.cancelOrder(1L, ErrorCode.INSUFFICIENT_STOCK.getMessage());
 
-    @Test
-    public void getOrderById_shouldReturnOrder() {
-        when(orderRepository.findByIdAndUserId(1L, 1L)).thenReturn(Optional.of(order));
-        when(orderMapper.orderToOrderResponse(order)).thenReturn(orderResponse);
-
-        OrderResponse result = orderService.getOrderById(1L, 1L);
-
-        assertEquals(orderResponse, result);
-    }
-
-    @Test
-    public void cancelOrder_shouldThrowBadRequest() {
-        order.setOrderStatus(OrderStatus.SHIPPED);
-
-        when(orderRepository.findByIdAndUserId(1L, 1L)).thenReturn(Optional.of(order));
-
-        assertThrows(BadRequestException.class, () -> orderService.cancelOrder(1L, 1L));
-    }
-
-    @Test
-    public void cancelOrder_shouldCancelOrder() {
-        when(orderRepository.findByIdAndUserId(1L, 1L)).thenReturn(Optional.of(order));
-
-        when(orderRepository.save(any(Order.class))).thenAnswer(inv -> inv.getArgument(0));
-
-        orderService.cancelOrder(1L, 1L);
-
-        ArgumentCaptor<Order> orderArgumentCaptor = ArgumentCaptor.forClass(Order.class);
-        verify(orderRepository).save(orderArgumentCaptor.capture());
-        assertEquals(OrderStatus.CANCELLED, orderArgumentCaptor.getValue().getOrderStatus());
-    }
-
-    @Test
-    public void cancelOrder_shouldCancelOrderAndPublishEvent() {
-        when(orderRepository.findById(1L)).thenReturn(Optional.of(order));
-
-        orderService.cancelOrder(1L, ErrorCode.INSUFFICIENT_STOCK.getMessage());
-
-        assertEquals(OrderStatus.CANCELLED, order.getOrderStatus());
-        verify(orderEventPublisher).publishOrderCancelledEvent(any(OrderCancelledEvent.class));
-    }
-
-    @Test
-    public void cancelOrder_shouldNotCancelOrderAndShouldNotPublishEvent() {
-        when(orderRepository.findById(1L)).thenReturn(Optional.empty());
-
-        orderService.cancelOrder(1L, ErrorCode.INSUFFICIENT_STOCK.getMessage());
-
-        assertEquals(OrderStatus.CREATED, order.getOrderStatus());
-        verifyNoMoreInteractions(orderRepository, orderEventPublisher);
+            assertEquals(OrderStatus.CREATED, order.getOrderStatus());
+            verify(orderRepository, times(1)).findById(1L);
+            verifyNoMoreInteractions(orderRepository, orderEventPublisher);
+        }
     }
 }
