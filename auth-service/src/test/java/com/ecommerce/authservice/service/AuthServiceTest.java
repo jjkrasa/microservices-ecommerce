@@ -10,6 +10,8 @@ import com.ecommerce.exceptionlib.exception.BadRequestException;
 import com.ecommerce.exceptionlib.exception.ConflictException;
 import com.ecommerce.exceptionlib.exception.UnauthorizedException;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -21,8 +23,7 @@ import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class AuthServiceTest {
@@ -69,56 +70,76 @@ class AuthServiceTest {
                 .build();
     }
 
-    @Test
-    public void register_shouldThrowBadRequest_whenPasswordsDoNotMatch() {
-        registerRequest.setPassword("Password123");
+    @Nested
+    @DisplayName("register() tests")
+    class Register {
+        @Test
+        public void register_shouldThrowBadRequest_whenPasswordsDoNotMatch() {
+            registerRequest.setPassword("Password123");
 
-        assertThrows(BadRequestException.class, () -> authService.register(registerRequest));
+            assertThrows(BadRequestException.class, () -> authService.register(registerRequest));
+            verifyNoMoreInteractions(userRepository, userMapper, userRepository);
+        }
+
+        @Test
+        public void register_shouldThrowConflict_whenEmailIsUsed() {
+            when(userRepository.findByEmailIgnoreCase(registerRequest.getEmail())).thenReturn(Optional.of(user));
+
+            assertThrows(ConflictException.class, () -> authService.register(registerRequest));
+
+            verify(userRepository, times(1)).findByEmailIgnoreCase(registerRequest.getEmail());
+            verifyNoMoreInteractions(userMapper, userRepository);
+        }
+
+        @Test
+        public void register_successful() {
+            when(userRepository.findByEmailIgnoreCase(registerRequest.getEmail())).thenReturn(Optional.empty());
+            when(userMapper.registerRequestToUser(registerRequest)).thenReturn(user);
+
+            authService.register(registerRequest);
+
+            verify(userRepository, times(1)).findByEmailIgnoreCase(registerRequest.getEmail());
+            verify(userMapper, times(1)).registerRequestToUser(registerRequest);
+            verify(passwordEncoder, times(1)).encode(registerRequest.getPassword());
+            verify(userRepository, times(1)).save(user);
+        }
     }
 
-    @Test
-    public void register_shouldThrowConflict_whenEmailIsUsed() {
-        when(userRepository.findByEmailIgnoreCase(registerRequest.getEmail())).thenReturn(Optional.of(user));
+    @Nested
+    @DisplayName("login() tests")
+    class Login {
+        @Test
+        public void login_shouldThrowUnauthorized_whenEmailNotFound() {
+            when(userRepository.findByEmailIgnoreCase(registerRequest.getEmail())).thenReturn(Optional.empty());
 
-        assertThrows(ConflictException.class, () -> authService.register(registerRequest));
-    }
+            assertThrows(UnauthorizedException.class, () -> authService.login(loginRequest));
+            verify(userRepository, times(1)).findByEmailIgnoreCase(loginRequest.getEmail());
+            verifyNoMoreInteractions(passwordEncoder, jwtService);
+        }
 
-    @Test
-    public void register_successful() {
-        when(userRepository.findByEmailIgnoreCase(registerRequest.getEmail())).thenReturn(Optional.empty());
-        when(userMapper.registerRequestToUser(registerRequest)).thenReturn(user);
+        @Test
+        public void login_shouldThrowUnauthorized_whenPasswordsDontMatch() {
+            when(userRepository.findByEmailIgnoreCase(registerRequest.getEmail())).thenReturn(Optional.of(user));
+            when(passwordEncoder.matches(loginRequest.getPassword(), user.getPassword())).thenReturn(false);
 
-        authService.register(registerRequest);
+            assertThrows(UnauthorizedException.class, () -> authService.login(loginRequest));
+            verify(userRepository, times(1)).findByEmailIgnoreCase(loginRequest.getEmail());
+            verify(passwordEncoder, times(1)).matches(loginRequest.getPassword(), user.getPassword());
+            verifyNoMoreInteractions(jwtService);
+        }
 
-        verify(userRepository).findByEmailIgnoreCase(registerRequest.getEmail());
-        verify(userMapper).registerRequestToUser(registerRequest);
-        verify(passwordEncoder).encode(registerRequest.getPassword());
-        verify(userRepository).save(user);
-    }
+        @Test
+        public void login_successful() {
+            when(userRepository.findByEmailIgnoreCase(registerRequest.getEmail())).thenReturn(Optional.of(user));
+            when(passwordEncoder.matches(loginRequest.getPassword(), user.getPassword())).thenReturn(true);
+            when(jwtService.generateToken(user)).thenReturn("JWT");
 
-    @Test
-    public void login_shouldThrowUnauthorized_whenEmailNotFound() {
-        when(userRepository.findByEmailIgnoreCase(registerRequest.getEmail())).thenReturn(Optional.empty());
+            String token = authService.login(loginRequest);
 
-        assertThrows(UnauthorizedException.class, () -> authService.login(loginRequest));
-    }
-
-    @Test
-    public void login_shouldThrowUnauthorized_whenPasswordsDontMatch() {
-        when(userRepository.findByEmailIgnoreCase(registerRequest.getEmail())).thenReturn(Optional.of(user));
-        when(passwordEncoder.matches(loginRequest.getPassword(), user.getPassword())).thenReturn(false);
-
-        assertThrows(UnauthorizedException.class, () -> authService.login(loginRequest));
-    }
-
-    @Test
-    public void login_successful() {
-        when(userRepository.findByEmailIgnoreCase(registerRequest.getEmail())).thenReturn(Optional.of(user));
-        when(passwordEncoder.matches(loginRequest.getPassword(), user.getPassword())).thenReturn(true);
-        when(jwtService.generateToken(user)).thenReturn("JWT");
-
-        String token = authService.login(loginRequest);
-
-        assertEquals("JWT", token);
+            verify(userRepository, times(1)).findByEmailIgnoreCase(loginRequest.getEmail());
+            verify(passwordEncoder, times(1)).matches(loginRequest.getPassword(), user.getPassword());
+            verify(jwtService, times(1)).generateToken(user);
+            assertEquals("JWT", token);
+        }
     }
 }
